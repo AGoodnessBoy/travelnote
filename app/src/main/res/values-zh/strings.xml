@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">旅行笔记</string>
+
+    <string name="guide">攻略</string>
+    <string name="note">笔记</string>
+    <string name="my">我的</string>
+</resources>

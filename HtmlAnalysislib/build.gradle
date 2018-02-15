@@ -1,0 +1,11 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation files('libs/jsoup-1.11.2.jar')
+    implementation group: 'org.json', name: 'org.json', version: '2.0'
+
+}
+
+sourceCompatibility = "1.7"
+targetCompatibility = "1.7"

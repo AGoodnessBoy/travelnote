@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">TravelNote</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="guide">Guide</string>
+    <string name="note">Note</string>
+    <string name="my">My</string>
+</resources>
