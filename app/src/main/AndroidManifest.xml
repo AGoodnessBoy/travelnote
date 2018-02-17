@@ -24,6 +24,9 @@
         <service
             android:name=".sync.GuideSyncIntentService"
             android:exported="false"></service>
+        <provider
+            android:authorities="ink.moming.travelnote"
+            android:name=".data.GuideProvider"/>
     </application>
 
 </manifest>

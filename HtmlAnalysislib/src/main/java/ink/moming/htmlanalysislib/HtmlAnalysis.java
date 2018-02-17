@@ -36,9 +36,6 @@ public class HtmlAnalysis {
             Document document = Jsoup.connect(url).get();
             Element body = document.getElementById("body");
             Elements citys = body.getElementsByClass("china-visit");
-
-
-
             for (Element city:citys){
                 JSONObject jsonArea=new JSONObject();
 
@@ -96,26 +93,14 @@ public class HtmlAnalysis {
             String cityInfo = document.getElementsByClass("main-desc-p").first().text();
             cityGuide.put("info",cityInfo);
 
-            JSONArray cityPic =new  JSONArray();
-
             Elements picEles = document.getElementById("J_pic-slider")
                     .getElementsByTag("li");
             int count =0;
+            String link = picEles.get(count).getElementsByTag("img").first()
+                    .attr("src");
+            String src = getMatchFromLink(link);
 
-            if (picEles.size()<3){
-                count = picEles.size();
-            }else {
-                count=3;
-            }
-
-            for (int  i =0;i<count;i++){
-                String link = picEles.get(i).getElementsByTag("img").first()
-                        .attr("src");
-                String src = getMatchFromLink(link);
-                cityPic.put(src);
-            }
-
-            cityGuide.put("images",cityPic);
+            cityGuide.put("image",src);
 
             JSONArray articleArray;
 

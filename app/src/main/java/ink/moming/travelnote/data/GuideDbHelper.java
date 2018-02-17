@@ -36,6 +36,8 @@ public class GuideDbHelper extends SQLiteOpenHelper {
                         " TEXT, "+
                         GuideContract.GuideEntry.COLUMN_CITY_ARTICLES+
                         " TEXT, "+
+                        GuideContract.GuideEntry.COLUMN_UPDATE_TAG+
+                        " TEXT NOT NULL , "+
                         " UNIQUE ("+ GuideContract.GuideEntry.COLUMN_CITY_NAME+
                         ") ON CONFLICT REPLACE);";
 

@@ -36,6 +36,8 @@ public class GuideContract {
 
         public static final String COLUMN_CITY_ARTICLES = "articles";
 
+        public static final String COLUMN_UPDATE_TAG = "update_tag";
+
 
 
         public static Uri buildUriWithId(int id){
