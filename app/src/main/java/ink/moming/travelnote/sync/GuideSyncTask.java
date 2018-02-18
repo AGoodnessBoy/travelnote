@@ -50,7 +50,7 @@ public class GuideSyncTask {
                 guideListResolver.bulkInsert(GuideContract.GuideEntry.CONTENT_URI,
                         contentValues);
                 //查询第一组数据 填充完整
-                upDateFirstCityInfoValues(context);
+                //upDateFirstCityInfoValues(context);
             }
 
         }catch (Exception e){

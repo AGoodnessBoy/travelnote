@@ -27,7 +27,7 @@ public class GuidePerference {
     public static String getCityName(Context context){
         SharedPreferences cityInfo = context.getSharedPreferences(PREF_CITY_NAME,Context.MODE_PRIVATE);
 
-        String city = cityInfo.getString("city",getDefaultCityName(context));
+        String city = cityInfo.getString("city","北京");
 
         return city;
 

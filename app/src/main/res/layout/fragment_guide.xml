@@ -1,23 +1,26 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+
     tools:context="ink.moming.travelnote.fragment.GuideFragment">
 
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="120dp"
         android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
         >
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/city_img"
-            android:scaleType="center"
+            android:scaleType="centerCrop"
             />
 
         <TextView
@@ -27,17 +30,12 @@
             android:id="@+id/city_name"
             tools:text="杭州市"
             />
-
-
-
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="120dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginTop="16dp">
         <com.google.android.gms.maps.MapView
             android:id="@+id/guide_map"
             android:layout_width="match_parent"
@@ -45,17 +43,14 @@
 
     </android.support.v7.widget.CardView>
 
-
     <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
+        android:layout_marginTop="16dp">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="8dp"
+            android:padding="16dp"
             tools:text="@string/app_name"
             android:id="@+id/city_desc" />
 
@@ -70,21 +65,16 @@
         android:visibility="gone"
         android:gravity="center"
         />
-    <ScrollView
+
+    <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp">
-        <android.support.v7.widget.RecyclerView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/guide_list"
-            />
-
-    </ScrollView>
-
-
+        android:id="@+id/guide_list"
+        />
 
 
 </LinearLayout>
+
+
+
+</ScrollView>

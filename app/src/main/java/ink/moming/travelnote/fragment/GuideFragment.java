@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -86,7 +87,7 @@ public class GuideFragment extends Fragment {
 
         initUI(view);
 
-        GuideSyncUtils.initialize(getContext());
+
         callbacks = getCallbacks(getContext());
 
         return view;
@@ -104,7 +105,7 @@ public class GuideFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-
+        GuideSyncUtils.initialize(getContext());
     }
 
     @Override
@@ -208,35 +209,9 @@ public class GuideFragment extends Fragment {
                         }else {
                             //更新数据
                             Log.d(TAG,cityname);
-                            ContentValues contentValues = GuideSyncUtils.updateCitySync(context,cityname);
+                            UpdateCityInfo task = new UpdateCityInfo();
 
-                            if (contentValues!=null){
-                                GuideListAdapter.ArticleBean[] beans = null;
-                                try {
-                                    beans =getArticleFromJson(contentValues.getAsString("articles"));
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                if (beans!=null){
-                                    mNoDataTextView.setVisibility(View.GONE);
-                                    mGuideListAdapter.swapData(beans);
-                                }else {
-                                    //list 无数据
-                                    mNoDataTextView.setVisibility(View.VISIBLE);
-                                    mGuideList.setVisibility(View.INVISIBLE);
-                                }
-                                mCityDescTextView.setText(contentValues.getAsString("info"));
-                                String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
-                                        contentValues.getAsString("image");
-                                Picasso.with(getContext()).load(image_link).into(mCityImageView);
-
-                            }else {
-                                //无数据
-                                mGuideList.setVisibility(View.INVISIBLE);
-                                mCityDescTextView.setText("暂无信息");
-                                mNoDataTextView.setVisibility(View.VISIBLE);
-                            }
-
+                            task.execute(cityname);
 
 
 
@@ -269,6 +244,47 @@ public class GuideFragment extends Fragment {
         mCityDescTextView.setText("暂无信息");
         mCityNameTextView.setText("暂无信息");
         mNoDataTextView.setVisibility(View.VISIBLE);
+
+    }
+
+    private class UpdateCityInfo extends AsyncTask<String,Void,ContentValues>{
+
+
+        @Override
+        protected ContentValues doInBackground(String... strings) {
+            String cityName = strings[0];
+            return GuideSyncUtils.updateCitySync(getContext(),cityName);
+        }
+        @Override
+        protected void onPostExecute(ContentValues contentValues) {
+            super.onPostExecute(contentValues);
+            if (contentValues!=null){
+                GuideListAdapter.ArticleBean[] beans = null;
+                try {
+                    beans =getArticleFromJson(contentValues.getAsString("articles"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                if (beans!=null){
+                    mNoDataTextView.setVisibility(View.GONE);
+                    mGuideListAdapter.swapData(beans);
+                }else {
+                    //list 无数据
+                    mNoDataTextView.setVisibility(View.VISIBLE);
+                    mGuideList.setVisibility(View.INVISIBLE);
+                }
+                mCityDescTextView.setText(contentValues.getAsString("info"));
+                String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
+                        contentValues.getAsString("image");
+                Picasso.with(getContext()).load(image_link).into(mCityImageView);
+
+            }else {
+                //无数据
+                mGuideList.setVisibility(View.INVISIBLE);
+                mCityDescTextView.setText("暂无信息");
+                mNoDataTextView.setVisibility(View.VISIBLE);
+            }
+        }
 
     }
 
