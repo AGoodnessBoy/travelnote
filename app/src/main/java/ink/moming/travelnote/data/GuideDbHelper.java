@@ -30,6 +30,10 @@ public class GuideDbHelper extends SQLiteOpenHelper {
                         " TEXT, "+
                         GuideContract.GuideEntry.COLUMN_CITY_LINK+
                         " TEXT, "+
+                        GuideContract.GuideEntry.COLUMN_CITY_AREA+
+                        " TEXT, "+
+                        GuideContract.GuideEntry.COLUMN_CITY_REGION+
+                        " TEXT, "+
                         GuideContract.GuideEntry.COLUMN_CITY_INFO+
                         " TEXT, "+
                         GuideContract.GuideEntry.COLUMN_CITY_IMAGES+

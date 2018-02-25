@@ -1,8 +1,10 @@
 package ink.moming.travelnote;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -22,14 +24,22 @@ import java.util.List;
 
 import ink.moming.htmlanalysislib.HtmlAnalysis;
 import ink.moming.travelnote.adapter.MainPagerAdapter;
+import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.fragment.GuideFragment;
 import ink.moming.travelnote.fragment.MyFragment;
 import ink.moming.travelnote.fragment.NoteFragment;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String TAG  = MainActivity.class.getSimpleName();
 
     private TabLayout mTabs;
     private ViewPager mViewPager;
+    public  MainPagerAdapter mainPagerAdapter;
+    public static final int ID_GUIDE_LOADER = 32;
+
+    List<String> titles = new ArrayList<>();
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,57 +47,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         initViewPager();
-        Thread thread = new Thread(){
-            @Override
-            public void run() {
-                super.run();
-                HtmlAnalysis test = new  HtmlAnalysis();
-                String o=null;
-                String tet = test.htmlTest("https://lvyou.baidu.com/yunnan/");
-                Log.d("tag",tet);
-                try {
-                    String tex2 = test.getArticleFromAjax("杭州");
-                    Log.d("tag",tex2);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                //JSONArray jsonArray =test.getCityList();
-                JSONObject object =test.getCityGuide("https://lvyou.baidu.com/yunnan/");
-                FileOutputStream out;
-                BufferedWriter writer = null;
-                try{
-                    out = openFileOutput("data", Context.MODE_PRIVATE);
-                    writer = new BufferedWriter(new OutputStreamWriter(out));
-                    writer.write(object.toString());
-                }catch (IOException e){
-                    e.printStackTrace();
-                }finally {
-                    try {
-                        writer.close();
-                    }catch (IOException e){
-                        e.printStackTrace();
-                    }
-                }
-            }
-        };
-        //thread.start();
-
-
-    }
-
-    //初始化 ViewPager TabLayout
-    private void initViewPager(){
-        MainPagerAdapter mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager());
-
-        mTabs = findViewById(R.id.main_tabs);
-        mViewPager = findViewById(R.id.main_view_pager);
-
-        List<String> titles = new ArrayList<>();
-        titles.add(getString(R.string.guide));
-        titles.add(getString(R.string.note));
-        titles.add(getString(R.string.my));
-
-
 
         mViewPager.setAdapter(mainPagerAdapter);
         mTabs.setupWithViewPager(mViewPager);
@@ -98,7 +57,29 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
 
+    //初始化 ViewPager TabLayout
+    private void initViewPager(){
+        mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager(),this);
+
+        mTabs = findViewById(R.id.main_tabs);
+        mViewPager = findViewById(R.id.main_view_pager);
+        titles.add(getString(R.string.guide));
+        titles.add(getString(R.string.note));
+        titles.add(getString(R.string.my));
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        super.onSaveInstanceState(outState);
+    }
+
+    public  void updataGuideList(){
+        GuideFragment guideFragment = (GuideFragment)mainPagerAdapter.getItem(0);
+        mainPagerAdapter.getItemPosition(guideFragment);
     }
 
 

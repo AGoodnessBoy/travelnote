@@ -54,14 +54,14 @@ public class GuideSyncUtils {
         GuideSyncIntentService.startActionSyncGuideList(context);
 
     }
-    public static ContentValues updateCitySync(@NonNull final Context context,String cityname){
-        ContentValues contentValues = new ContentValues();
+    public static Cursor updateCitySync(@NonNull final Context context,String cityname){
+        Cursor cursor = null;
         try {
-            contentValues =  GuideSyncTask.upDateCityInfoValuesById(context,cityname);
+            cursor =  GuideSyncTask.upDateCityInfoValuesById(context,cityname);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return contentValues;
+        return cursor;
     }
 
 

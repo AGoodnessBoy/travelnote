@@ -30,6 +30,11 @@ public class GuideContract {
 
         public static final String COLUMN_CITY_LINK = "link";
 
+        public static final String COLUMN_CITY_AREA = "area";
+
+        public static final String COLUMN_CITY_REGION = "region";
+
+
         public static final String COLUMN_CITY_INFO = "info";
 
         public static final String COLUMN_CITY_IMAGES = "image";

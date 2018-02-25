@@ -25,6 +25,9 @@ import ink.moming.travelnote.unit.NetUnit;
 
 public class GuideSyncTask {
 
+
+    public static final String  TAG  = GuideSyncTask.class.getSimpleName();
+
     /**
      *
      * @param context
@@ -33,7 +36,7 @@ public class GuideSyncTask {
 
         try {
             //保存为ContentValues[]
-            ArrayList<ContentValues> initializedData = NetUnit.buildGuideCityListValues();
+            ArrayList<ContentValues> initializedData = NetUnit.buildGuideCityListValuesFromFile(context);
 
 
             if (initializedData.size()!=0&&initializedData!=null){
@@ -49,8 +52,6 @@ public class GuideSyncTask {
 
                 guideListResolver.bulkInsert(GuideContract.GuideEntry.CONTENT_URI,
                         contentValues);
-                //查询第一组数据 填充完整
-                //upDateFirstCityInfoValues(context);
             }
 
         }catch (Exception e){
@@ -59,50 +60,7 @@ public class GuideSyncTask {
     }
 
 
-    /**
-     * 获取首个城市的信息
-     * @param context
-     * @throws JSONException
-     */
-    private static void upDateFirstCityInfoValues(Context context) throws JSONException {
-
-        ContentResolver contentResolver = context.getContentResolver();
-        Cursor cursor = contentResolver.query(GuideContract.GuideEntry.CONTENT_URI,null,
-                null,null,null);
-
-
-        ContentValues cityInfoCV = new ContentValues();
-
-        if (cursor!=null){
-            cursor.moveToFirst();
-            int cityid = cursor.getInt(cursor.getColumnIndex(GuideContract.GuideEntry._ID));
-            Uri cityUri = GuideContract.GuideEntry.buildUriWithId(cityid);
-            String citylink = cursor.getString(cursor.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_LINK));
-            String cityName = cursor.getString(cursor.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_NAME));
-            GuidePerference.saveCityName(context,cityName);
-            cursor.close();
-
-            JSONObject cityInfo = NetUnit.getCityContentFromBaiduAPI(citylink);
-
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_INFO,
-                    cityInfo.getString("info"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_IMAGES,
-                    cityInfo.getString("image"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_ARTICLES,
-                    cityInfo.getString("articles"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_UPDATE_TAG,"1");
-            int updateStatus = contentResolver.update(cityUri,cityInfoCV, GuideContract.GuideEntry._ID+" = ?",
-                    new String[]{Integer.toString(cityid)});
-
-            if (updateStatus!=0){
-                Log.d("first date","数据插入成功");
-            }
-        }
-
-    }
-
-
-    public static ContentValues upDateCityInfoValuesById(Context context,String cityname) throws JSONException {
+    public static Cursor upDateCityInfoValuesById(Context context,String cityname) throws JSONException {
 
         ContentResolver contentResolver = context.getContentResolver();
 
@@ -110,33 +68,51 @@ public class GuideSyncTask {
                 GuideContract.GuideEntry.COLUMN_CITY_NAME+" = ?",
                 new String[]{cityname},null);
 
+
+
         ContentValues cityInfoCV = new ContentValues();
+        Cursor updated = null;
 
         if (cursor!=null){
             cursor.moveToFirst();
             int cityid = cursor.getInt(cursor.getColumnIndex(GuideContract.GuideEntry._ID));
-            Uri cityUri = GuideContract.GuideEntry.buildUriWithId(cityid);
             String citylink = cursor.getString(cursor.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_LINK));
-            cursor.close();
+            String upDate_Tag = cursor.getString(cursor.getColumnIndex(GuideContract.GuideEntry.COLUMN_UPDATE_TAG));
+            if (upDate_Tag.equals("1")){
+                updated=cursor;
+            }else {
+                if (cursor!=null){
+                    cursor.close();
+                }
+                Uri cityUri = GuideContract.GuideEntry.buildUriWithId(cityid);
+                JSONObject cityInfo = NetUnit.getCityContentFromBaiduAPI(citylink);
 
-            JSONObject cityInfo = NetUnit.getCityContentFromBaiduAPI(citylink);
+                cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_INFO,
+                        cityInfo.getString("info"));
+                cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_IMAGES,
+                        cityInfo.getString("image"));
+                cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_ARTICLES,
+                        cityInfo.getString("articles"));
+                cityInfoCV.put(GuideContract.GuideEntry.COLUMN_UPDATE_TAG,"1");
 
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_INFO,
-                    cityInfo.getString("info"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_IMAGES,
-                    cityInfo.getString("image"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_ARTICLES,
-                    cityInfo.getString("articles"));
-            cityInfoCV.put(GuideContract.GuideEntry.COLUMN_UPDATE_TAG,"1");
+                int updateStatus = contentResolver.update(cityUri,cityInfoCV, GuideContract.GuideEntry._ID+" = ?",
+                        new String[]{Integer.toString(cityid)});
 
-            int updateStatus = contentResolver.update(cityUri,cityInfoCV, GuideContract.GuideEntry._ID+" = ?",
-                    new String[]{Integer.toString(cityid)});
+                if (updateStatus!=0){
+                    Log.d(TAG,"数据插入成功");
+                    updated = contentResolver.query(GuideContract.GuideEntry.CONTENT_URI,null,
+                            GuideContract.GuideEntry.COLUMN_CITY_NAME+" = ?",
+                            new String[]{cityname},null);
+                }else {
+                    Log.d(TAG,"数据插入失败");
+                    updated = null;
 
-            if (updateStatus!=0){
-                Log.d("first date","数据插入成功");
+                }
             }
+
+
         }
 
-        return cityInfoCV;
+        return updated;
     }
 }

@@ -41,8 +41,9 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
     public void onBindViewHolder(GuideListViewHolder holder, int position) {
         ArticleBean articleBean = mArticles[position];
         Context context = holder.itemView.getContext();
+        String image_small = "https://gss0.bdstatic.com/6b1IcTe9RMgBo1vgoIiO_jowehsv/maps/services/thumbnails?width=215&height=145&quality=120&align=middle,middle&src=";
         String image_base = "http://hiphotos.baidu.com/lvpics/pic/item/";
-        String image_url = image_base+articleBean.a_image+".jpg";
+        String image_url = image_small+ image_base+articleBean.a_image+".jpg";
         holder.mArticleTitle.setText(articleBean.getA_title());
         Picasso.with(context).load(image_url)
                 .into(holder.mArticleImage);

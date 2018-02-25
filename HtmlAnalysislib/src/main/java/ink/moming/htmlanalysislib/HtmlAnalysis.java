@@ -79,6 +79,45 @@ public class HtmlAnalysis {
         }
         return areaArray;
     }
+    public JSONArray getCityListSimple(){
+        JSONArray cityList = new JSONArray();
+        String url = "https://lvyou.baidu.com/scene/";
+        try {
+            Document document = Jsoup.connect(url).get();
+            Element body = document.getElementById("body");
+            Elements citys = body.getElementsByClass("china-visit");
+
+            for (Element city:citys){
+                String firstAreaName = city.getElementsByTag("span").first().text();
+                Elements secondAreaEles = city.getElementsByTag("ul").first()
+                        .getElementsByTag("li");
+                for (int i=0;i<secondAreaEles.size();i++){
+                    String secondAreaName = secondAreaEles.get(i)
+                            .getElementsByClass("china-visit-type").first().text();
+                    Elements thirdAreaEles = secondAreaEles.get(i)
+                            .getElementsByTag("a");
+
+                    for (int j =0 ;j<thirdAreaEles.size();j++){
+                        JSONObject thirdAreaJson = new JSONObject();
+                        thirdAreaJson.put("city",thirdAreaEles.get(j).text());
+                        thirdAreaJson.put("url",thirdAreaEles.get(j).attr("href"));
+                        thirdAreaJson.put("region",secondAreaName);
+                        thirdAreaJson.put("area",firstAreaName);
+                        cityList.put(thirdAreaJson);
+                    }
+                }
+            }
+
+
+
+
+        }catch (IOException e){
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return cityList;
+    }
 
     public JSONObject getCityGuide(String url){
         //https://lvyou.baidu.com/search/ajax/search?format=ajax&word=%E4%B8%89%E4%BA%9A

@@ -29,6 +29,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:text="@string/app_name"
+                android:textColor="@color/primaryTextColor"
                 android:textSize="22sp"
                 />
 
@@ -38,7 +39,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/main_tabs"
-            app:tabTextColor="@color/colorAccent"
+            app:tabTextColor="@color/primaryTextColor"
             >
             <android.support.design.widget.TabItem
                 android:layout_width="wrap_content"
