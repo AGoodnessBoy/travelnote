@@ -1,33 +1,15 @@
 package ink.moming.travelnote;
 
-import android.content.Context;
-import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import ink.moming.htmlanalysislib.HtmlAnalysis;
 import ink.moming.travelnote.adapter.MainPagerAdapter;
-import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.fragment.GuideFragment;
-import ink.moming.travelnote.fragment.MyFragment;
-import ink.moming.travelnote.fragment.NoteFragment;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG  = MainActivity.class.getSimpleName();
@@ -35,7 +17,6 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout mTabs;
     private ViewPager mViewPager;
     public  MainPagerAdapter mainPagerAdapter;
-    public static final int ID_GUIDE_LOADER = 32;
 
     List<String> titles = new ArrayList<>();
 

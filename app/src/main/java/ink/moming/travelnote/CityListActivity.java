@@ -4,18 +4,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.support.v4.app.FragmentManager;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.widget.Toast;
 
 import ink.moming.travelnote.adapter.CityListAdapter;
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
-import ink.moming.travelnote.fragment.GuideFragment;
 import ink.moming.travelnote.ui.StickyRecyclerView;
 
 public class CityListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
@@ -71,8 +69,11 @@ public class CityListActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onClick(String city) {
-        GuidePerference.saveCityName(this,city);
-        finish();
+
+        Intent intent = new Intent();
+        intent.putExtra("city",city);
+        setResult(33,intent);
         Toast.makeText(this,GuidePerference.getCityName(this),Toast.LENGTH_LONG).show();
+        finish();
     }
 }

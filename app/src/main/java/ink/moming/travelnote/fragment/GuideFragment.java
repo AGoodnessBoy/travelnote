@@ -1,6 +1,5 @@
 package ink.moming.travelnote.fragment;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -39,7 +38,6 @@ import ink.moming.travelnote.R;
 import ink.moming.travelnote.adapter.GuideListAdapter;
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
-import ink.moming.travelnote.sync.GuideSyncTask;
 import ink.moming.travelnote.sync.GuideSyncUtils;
 import ink.moming.travelnote.unit.NetUnit;
 
@@ -66,6 +64,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     //常量
     public static final String TAG = GuideFragment.class.getSimpleName();
     public static final int ID_GUIDE_LOADER = 32;
+    public static final int CITY_LIST_RES = 31;
     public static final String MAPVIEW_BUNDLE_KEY ="map_data";
     public static final String CITY_STATUS = "city-status";
 
@@ -225,11 +224,27 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getContext(), CityListActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,CITY_LIST_RES);
             }
         });
 
 
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == CITY_LIST_RES && resultCode == 33){
+            String city = data.getStringExtra("city");
+            GuidePerference.saveCityName(getContext(),city);
+            if (cityBundle!=null){
+                cityBundle.clear();
+            }
+            cityBundle.putString("city-name",city);
+            getActivity().getSupportLoaderManager().restartLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
+        }
 
     }
 

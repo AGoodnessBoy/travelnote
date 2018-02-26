@@ -3,7 +3,10 @@ package ink.moming.travelnote.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +22,17 @@ import ink.moming.travelnote.data.GuidePerference;
  */
 public class MyFragment extends Fragment {
 
+    public static final int USER_RES = 41;
+
+    public static final String TAG = MyFragment.class.getSimpleName();
+
     private TextView mUserLoginTextView;
     private TextView mUserNameTextView;
     private TextView mLoginOutTextView;
     private TextView mUserColTextView;
     private ImageView mUserImageView;
+
+    private String mUsername;
 
 
     public MyFragment() {
@@ -47,18 +56,56 @@ public class MyFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(),LoginActivity.class);
-                startActivity(intent);
+                startActivityForResult(intent,USER_RES);
             }
         });
-
-        if (GuidePerference.getUserStatus(getContext())){
-            mUserLoginTextView.setVisibility(View.GONE);
-            //mUserLoginTextView.setText();
-        }
-
 
 
         return view;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState!=null){
+            mUserNameTextView.setVisibility(View.VISIBLE);
+            Log.d(TAG,"onSaveInstanceState"+savedInstanceState.getString("user_name_save"));
+            mUserNameTextView.setText(savedInstanceState.getString("user_name_save"));
+            mUserLoginTextView.setVisibility(View.GONE);
+        }
+    }
+
+    public void showSnackbar(View view, String message, int duration)
+    {
+        Snackbar.make(view, message, duration).show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == USER_RES && resultCode == 42){
+            String mEmail = data.getStringExtra("useremail");
+            String name = data.getStringExtra("username");
+            GuidePerference.saveUserStatus(getContext(),mEmail,name);
+            mUsername =name;
+            Log.d(TAG,"onActivityResult"+mUsername);
+            mUserNameTextView.setVisibility(View.VISIBLE);
+            mUserNameTextView.setText(name);
+            mUserLoginTextView.setVisibility(View.GONE);
+        }
+
+        showSnackbar(mUserNameTextView,"登录成功", Snackbar.LENGTH_LONG);
+    }
+
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mUsername!=null){
+            Log.d(TAG,"onSaveInstanceState"+mUsername);
+            outState.putString("user_name_save",mUsername);
+        }
+    }
 }
