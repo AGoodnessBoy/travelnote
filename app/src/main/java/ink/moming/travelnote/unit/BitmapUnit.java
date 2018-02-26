@@ -3,6 +3,9 @@ package ink.moming.travelnote.unit;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Base64;
+
+import java.io.ByteArrayOutputStream;
 
 /**
  * http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
@@ -58,5 +61,33 @@ public class BitmapUnit {
         options.inJustDecodeBounds = false;
         Bitmap src = BitmapFactory.decodeFile(pathName, options);
         return src;
+    }
+
+    public static String bitmap2String(Bitmap bitmap){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        boolean b = bitmap.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        if (!b){
+            return null;
+        }
+
+        byte[] bs = stream.toByteArray();
+
+        String s = Base64.encodeToString(bs,Base64.DEFAULT);
+
+        return s;
+    }
+
+
+    public static Bitmap string2Bitmap(String s){
+        Bitmap bitmap = null;
+        try {
+            byte[] bytes;
+            bytes = Base64.decode(s,Base64.DEFAULT);
+            bitmap =
+                    BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+            return bitmap;
+        }catch (Exception e){
+            return null;
+        }
     }
 }

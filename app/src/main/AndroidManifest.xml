@@ -47,7 +47,8 @@
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login" />
-        <activity android:name=".NoteUploadActivity"></activity>
+        <activity android:name=".NoteUploadActivity" />
+        <activity android:name=".GuideDetailActivity"></activity>
     </application>
 
 </manifest>

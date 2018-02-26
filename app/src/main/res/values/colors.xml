@@ -9,6 +9,8 @@
     <color name="primaryTextColor">#ffffff</color>
     <color name="secondaryTextColor">#ffffff</color>
     <color name="lineColor">#f1f4f6</color>
+    <color name="primaryDarkColor">#102027</color>
+    <color name="primaryLightColor">#62727b</color>
 
 
 </resources>
