@@ -78,21 +78,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center|left"
-                    android:textSize="14sp"
-                    android:id="@+id/user_col"
-                    android:text="我的收藏"
-                    android:paddingLeft="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp"
-                    />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/lineColor"/>
+
 
                 <TextView
                     android:layout_width="match_parent"

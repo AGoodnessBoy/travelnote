@@ -1,94 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ink.moming.travelnote.ui.DrawInsetsFrameLayout
+<android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ink.moming.travelnote.GuideDetailActivity">
-    <ink.moming.travelnote.ui.GuideArticleNestedScrollView
+
+    <WebView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/scrollView_guideaeticle"
-        >
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/photo_container"
-                android:background="@color/colorPrimaryDark"
-                >
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:id="@+id/photo"
-                    />
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="300dp"
-                    android:background="@drawable/photo_background_protection"/>
-
-            </FrameLayout>
-            <ink.moming.travelnote.ui.MaxWidthLinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="center_horizontal"
-                android:maxWidth="10000dp"
-                android:background="#fff"
-                android:elevation="2dp"
-                android:layout_marginTop="300dp"
-                >
-
-                <LinearLayout
-                    android:id="@+id/meta_bar"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="#333"
-                    android:layout_gravity="bottom"
-                    android:orientation="vertical"
-                    android:paddingLeft="16dp"
-                    android:paddingRight="16dp"
-                    android:paddingTop="16dp"
-                    android:paddingBottom="16dp"
-                    android:layout_marginBottom="16dp">
-
-                    <TextView
-                        android:id="@+id/article_title"
-                        style="@style/articleDetailTitle"
-                        tools:text="我是标题"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingBottom="4dp"
-                        />
-
-                    <TextView
-                        android:id="@+id/article_byline"
-                        style="@style/articleDetailsubTitle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-                </LinearLayout>
-
-                <TextView
-                    android:id="@+id/article_body"
-                    style="@style/articleBody"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginRight="16dp"
-                    android:paddingBottom="16dp"
-                    android:singleLine="false"
-                    android:textIsSelectable="true"/>
-
-            </ink.moming.travelnote.ui.MaxWidthLinearLayout>
-
-
-        </FrameLayout>
-
-
-    </ink.moming.travelnote.ui.GuideArticleNestedScrollView>
-
-</ink.moming.travelnote.ui.DrawInsetsFrameLayout>
+        android:id="@+id/guide_article">
+    </WebView>
+</android.support.design.widget.CoordinatorLayout>

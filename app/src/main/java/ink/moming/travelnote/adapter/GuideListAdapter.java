@@ -1,6 +1,7 @@
 package ink.moming.travelnote.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import ink.moming.travelnote.GuideDetailActivity;
 import ink.moming.travelnote.R;
 
 /**
@@ -23,8 +25,13 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
 
     private ArticleBean[] mArticles;
 
+
     public GuideListAdapter(Context mContext) {
         this.mContext = mContext;
+    }
+
+    public String getAricleId(int postion){
+        return mArticles[postion].getA_id();
     }
 
     @Override
@@ -33,8 +40,18 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
         int layout = R.layout.guide_list_item;
         LayoutInflater inflater = LayoutInflater.from(mContext);
         View view = inflater.inflate(layout,parent,false);
+        final GuideListViewHolder viewHolder =new GuideListViewHolder(view);
         view.setFocusable(true);
-        return new GuideListViewHolder(view);
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext, GuideDetailActivity.class);
+                String url ="https://lvyou.baidu.com/notes/"+getAricleId(viewHolder.getAdapterPosition());
+                intent.putExtra("url",url);
+                mContext.startActivity(intent);
+            }
+        });
+        return viewHolder;
     }
 
     @Override
