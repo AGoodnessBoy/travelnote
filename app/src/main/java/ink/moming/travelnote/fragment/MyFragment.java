@@ -48,7 +48,6 @@ public class MyFragment extends Fragment {
         View view =inflater.inflate(R.layout.fragment_my, container, false);
 
         mUserNameTextView = view.findViewById(R.id.user_name);
-        mUserColTextView = view.findViewById(R.id.user_col);
         mUserLoginTextView = view.findViewById(R.id.login_text);
         mLoginOutTextView = view.findViewById(R.id.login_out);
 
