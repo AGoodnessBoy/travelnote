@@ -46,20 +46,14 @@
                 android:layout_height="1dp"
                 android:layout_marginTop="10dp"
                 android:src="#E4E3E3" />
-
-            <GridView
-                android:id="@+id/gridView1"
-                android:layout_width="fill_parent"
+            <ImageView
+                android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:id="@+id/uploadimage"
                 android:background="#FFFFFF"
-                android:columnWidth="90dp"
-                android:gravity="center"
-                android:horizontalSpacing="5dp"
-                android:numColumns="4"
                 android:padding="10dp"
-                android:stretchMode="columnWidth"
-                android:verticalSpacing="5dp" >
-            </GridView>
+                android:layout_margin="6dp"
+                />
 
             <ImageView
                 android:layout_width="match_parent"
@@ -67,7 +61,7 @@
                 android:src="#E4E3E3" />
 
             <Button
-                android:id="@+id/email_sign_in_button"
+                android:id="@+id/upload_button"
                 style="?android:textAppearanceSmall"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

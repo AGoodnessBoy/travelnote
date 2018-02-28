@@ -1,12 +1,8 @@
 package ink.moming.travelnote.unit;
 
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.res.Resources;
-import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
 
@@ -17,7 +13,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,12 +23,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
 
 import ink.moming.htmlanalysislib.HtmlAnalysis;
 import ink.moming.travelnote.R;
 import ink.moming.travelnote.data.GuideContract;
+import okhttp3.Cache;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 /**
  * Created by Moming-Desgin on 2018/2/14.
@@ -45,6 +53,9 @@ public class NetUnit {
 
     public static final String HE_WEATHER_API ="https://free-api.heweather.com/now";
     public static final String USER_API ="http://api.moming.ink/db_user_func.php";
+    public static final String NOTE_API ="http://api.moming.ink/db_note_func.php";
+    public static final String IMAGE_API ="http://api.moming.ink/image/";
+
 
 
     final static String APIKEY_PARAM="key";
@@ -337,5 +348,98 @@ public class NetUnit {
         }
         return json;
 
+    }
+
+
+    public static String uploadNote(Context context,String text,String image,int id){
+
+        Uri uri = Uri.parse(NOTE_API).buildUpon()
+                .appendQueryParameter("action","upload")
+                .appendQueryParameter("uid",Integer.toString(id))
+                .appendQueryParameter("text",text)
+                .build();
+        URL url = null;
+        final String[] json = {null};
+
+        File sdcache = context.getExternalCacheDir();
+        int cacheSize = 10 * 1024 * 1024;
+        //设置超时时间及缓存
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(15, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(20, TimeUnit.SECONDS)
+                .cache(new Cache(sdcache.getAbsoluteFile(), cacheSize));
+
+        OkHttpClient mOkHttpClient=builder.build();
+
+        MultipartBody.Builder mbody=new MultipartBody.Builder().setType(MultipartBody.FORM);
+        File img1=new File(image);
+        mbody.addFormDataPart("image",img1.getName(),RequestBody.create(MediaType.parse("image/jpg"),img1));
+
+        try{
+            Log.d(TAG,uri.toString());
+            url = new URL(uri.toString());
+
+            Request request = new Request.Builder()
+                    .url(url).post(mbody.build())
+                    .build();
+
+
+            mOkHttpClient.newCall(request).enqueue(new Callback() {
+
+                String responceStr = "";
+                @Override
+                public void onFailure(Call call, IOException e) {
+
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    Log.i(TAG, response.body().string());
+                    responceStr = response.body().string();
+                    json[0] = responceStr;
+
+                }
+            });
+
+
+        }catch (MalformedURLException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return json[0];
+
+    }
+
+    public static String getNoteList(int id){
+
+        Uri uri = Uri.parse(NOTE_API).buildUpon()
+                .appendQueryParameter("action","list")
+                .appendQueryParameter("uid",Integer.toString(id))
+                .build();
+        URL url = null;
+        String json = null;
+        try{
+            Log.d(TAG,uri.toString());
+            url = new URL(uri.toString());
+            json = getResponseFromHttpUrl(url);
+        }catch (MalformedURLException e){
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return json;
+
+    }
+
+
+
+
+    public static String getStringToday() {
+        Date currentTime = new Date();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss");
+        String dateString = formatter.format(currentTime);
+        return dateString;
     }
 }

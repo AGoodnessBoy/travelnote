@@ -30,17 +30,38 @@ public class GuidePerference {
         editor.commit();
     }
 
-    public static void saveUserStatus(Context context,String email,String name) {
-        SharedPreferences userSp = context.getSharedPreferences(PREF_CITY_NAME,Context.MODE_PRIVATE);
+    public static void saveUserStatus(Context context,String email,String name,int id) {
+        SharedPreferences userSp = context.getSharedPreferences(PREF_USER_TOKEN,Context.MODE_PRIVATE);
         SharedPreferences.Editor editor =   userSp.edit();
         editor.putString("user_email",email);
         editor.putString("user_name",name);
+        editor.putInt("user_id",id);
         editor.putLong("login_date",System.currentTimeMillis());
+        editor.commit();
+    }
+
+    public static void clearUserStatus(Context context) {
+        SharedPreferences userSp = context.getSharedPreferences(PREF_USER_TOKEN,Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor =   userSp.edit();
+        editor.clear();
+        editor.commit();
+    }
+
+    public static String getUserName(Context context){
+        SharedPreferences userSp = context.getSharedPreferences(PREF_USER_TOKEN,Context.MODE_PRIVATE);
+        String username = userSp.getString("user_name","");
+        return username;
+    }
+
+    public static int getUserId(Context context){
+        SharedPreferences userSp = context.getSharedPreferences(PREF_USER_TOKEN,Context.MODE_PRIVATE);
+        int userid = userSp.getInt("user_id",0);
+        return userid;
     }
 
     public static Boolean getUserStatus(Context context){
         final long interval =604800000;
-        SharedPreferences userSp = context.getSharedPreferences(PREF_CITY_NAME,Context.MODE_PRIVATE);
+        SharedPreferences userSp = context.getSharedPreferences(PREF_USER_TOKEN,Context.MODE_PRIVATE);
         if (userSp!=null){
             long loginTime = userSp.getLong("login_date",0);
             long nowTime = System.currentTimeMillis();

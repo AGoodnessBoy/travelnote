@@ -17,16 +17,17 @@
         android:layout_height="match_parent"
         android:id="@+id/note_list"
         >
-
     </android.support.v7.widget.RecyclerView>
 
     <android.support.design.widget.FloatingActionButton
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="right|bottom"
-        android:layout_marginRight="32dp"
-        android:layout_marginBottom="32dp"
         android:id="@+id/fab_note"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_gravity="right|bottom"
+        android:layout_marginBottom="32dp"
+        android:layout_marginRight="32dp"
+        android:src="@drawable/ic_note_add"
+        android:scaleType="centerInside"
         />
 
 </android.support.design.widget.CoordinatorLayout>

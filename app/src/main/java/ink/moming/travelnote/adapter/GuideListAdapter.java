@@ -3,6 +3,7 @@ package ink.moming.travelnote.adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
     private final Context mContext;
 
     private ArticleBean[] mArticles;
+    private final static String TAG = GuideListAdapter.class.getSimpleName();
 
 
     public GuideListAdapter(Context mContext) {
@@ -47,6 +49,8 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, GuideDetailActivity.class);
                 String url ="https://lvyou.baidu.com/notes/"+getAricleId(viewHolder.getAdapterPosition());
+                Log.d(TAG,url);
+
                 intent.putExtra("url",url);
                 mContext.startActivity(intent);
             }

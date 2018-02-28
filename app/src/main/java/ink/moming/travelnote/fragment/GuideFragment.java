@@ -178,6 +178,9 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         super.onResume();
         mCityMap.onResume();
         Log.d(TAG,"onResume");
+        if (cityBundle!=null){
+            getActivity().getSupportLoaderManager().restartLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
+        }
     }
 
     @Override
@@ -335,9 +338,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         geocodingTask.execute(GuidePerference.getCityName(getContext()));
 
 
-
-
-
     }
 
     //更新城市
@@ -405,17 +405,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                 map.moveCamera(CameraUpdateFactory.newLatLng(cityLatlng));
             }
         }
-    }
-
-
-
-    //无数据
-    private void showNoData(){
-        mGuideList.setVisibility(View.INVISIBLE);
-        mCityDescTextView.setText("暂无信息");
-        mCityNameTextView.setText("暂无信息");
-        mNoDataTextView.setVisibility(View.VISIBLE);
-
     }
 
 

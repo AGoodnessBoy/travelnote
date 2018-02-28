@@ -1,6 +1,8 @@
 package ink.moming.travelnote.fragment;
 
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import ink.moming.travelnote.LoginActivity;
@@ -29,8 +30,6 @@ public class MyFragment extends Fragment {
     private TextView mUserLoginTextView;
     private TextView mUserNameTextView;
     private TextView mLoginOutTextView;
-    private TextView mUserColTextView;
-    private ImageView mUserImageView;
 
     private String mUsername;
 
@@ -45,7 +44,7 @@ public class MyFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View view =inflater.inflate(R.layout.fragment_my, container, false);
+        final View view =inflater.inflate(R.layout.fragment_my, container, false);
 
         mUserNameTextView = view.findViewById(R.id.user_name);
         mUserLoginTextView = view.findViewById(R.id.login_text);
@@ -58,6 +57,39 @@ public class MyFragment extends Fragment {
                 startActivityForResult(intent,USER_RES);
             }
         });
+        mLoginOutTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (GuidePerference.getUserStatus(getContext())){
+                    AlertDialog dialog = new AlertDialog.Builder(getContext())
+                            .setTitle("是否退出登录")
+                            .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            })
+                            .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    mUsername=null;
+                                    mUserNameTextView.setVisibility(View.GONE);
+                                    mUserLoginTextView.setVisibility(View.VISIBLE);
+                                    GuidePerference.clearUserStatus(getContext());
+                                    showSnackbar(view,"退出登录",Snackbar.LENGTH_SHORT);
+                                    dialog.dismiss();
+                                }
+                            })
+
+                            .create();
+                    dialog.show();
+                }else {
+                    showSnackbar(view,"你还没有登录！",Snackbar.LENGTH_SHORT);
+                }
+            }
+        });
+
 
 
         return view;
@@ -87,7 +119,10 @@ public class MyFragment extends Fragment {
         if (requestCode == USER_RES && resultCode == 42){
             String mEmail = data.getStringExtra("useremail");
             String name = data.getStringExtra("username");
-            GuidePerference.saveUserStatus(getContext(),mEmail,name);
+            int id = data.getIntExtra("userid",0);
+            GuidePerference.saveUserStatus(getContext(),mEmail,name,id);
+            Log.d(TAG,"onActivityResult"+GuidePerference.getUserName(getContext()));
+            Log.d(TAG,"onActivityResult"+GuidePerference.getUserId(getContext()));
             mUsername =name;
             Log.d(TAG,"onActivityResult"+mUsername);
             mUserNameTextView.setVisibility(View.VISIBLE);
@@ -95,7 +130,7 @@ public class MyFragment extends Fragment {
             mUserLoginTextView.setVisibility(View.GONE);
         }
 
-        showSnackbar(mUserNameTextView,"登录成功", Snackbar.LENGTH_LONG);
+
     }
 
 
@@ -105,6 +140,21 @@ public class MyFragment extends Fragment {
         if (mUsername!=null){
             Log.d(TAG,"onSaveInstanceState"+mUsername);
             outState.putString("user_name_save",mUsername);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (GuidePerference.getUserStatus(getContext())){
+            Log.d(TAG,"onResume:login");
+            mUserNameTextView.setVisibility(View.VISIBLE);
+            mUserNameTextView.setText(GuidePerference.getUserName(getContext()));
+            mUserLoginTextView.setVisibility(View.GONE);
+        }else {
+            Log.d(TAG,"onResume:not login");
+            mUserNameTextView.setVisibility(View.GONE);
+            mUserLoginTextView.setVisibility(View.VISIBLE);
         }
     }
 }

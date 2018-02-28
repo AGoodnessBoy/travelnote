@@ -343,12 +343,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     if (status==100){
                         String pass = success.getJSONObject("data").getString("user_pass");
                         String name = success.getJSONObject("data").getString("user_name");
+                        int id= success.getJSONObject("data").getInt("user_id");
                         if (pass.equals(mPassword)){
 
-
+                            showSnackbar(mLoginFormView,"登录成功", Snackbar.LENGTH_LONG);
                             Intent intent = new Intent();
                             intent.putExtra("username",name);
                             intent.putExtra("useremail",mEmail);
+                            intent.putExtra("userid",id);
                             setResult(42,intent);
                             finish();
 
