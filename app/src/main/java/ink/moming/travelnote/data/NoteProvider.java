@@ -11,25 +11,23 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 /**
- * Created by Moming-Desgin on 2018/2/14.
+ * Created by admin on 2018/3/1.
  */
 
-public class GuideProvider extends ContentProvider {
+public class NoteProvider extends ContentProvider {
 
-
-    public static final int CODE_GUIDE = 100;
-    public static final int CODE_GUIDE_WITH_ID = 101;
+    public static final int CODE_NOTE = 200;
+    public static final int CODE_NOTE_WITH_ID = 201;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
-    private GuideDbHelper mDbHelper;
-
+    private NoteDbHelper mDbHelper;
 
     private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        final String authority = GuideContract.CONTENT_AUTHORITY;
+        final String authority = NoteContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority,GuideContract.PATH_GUIDE,CODE_GUIDE);
-        matcher.addURI(authority,GuideContract.PATH_GUIDE+"/#",CODE_GUIDE_WITH_ID);
+        matcher.addURI(authority,NoteContract.PATH_NOTE,CODE_NOTE);
+        matcher.addURI(authority,NoteContract.PATH_NOTE+"/#",CODE_NOTE_WITH_ID);
 
 
         return matcher;
@@ -37,32 +35,26 @@ public class GuideProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mDbHelper = new GuideDbHelper(getContext());
+        mDbHelper = new NoteDbHelper(getContext());
         return true;
     }
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri,
-                        @Nullable String[] projection,
-                        @Nullable String selection,
-                        @Nullable String[] selectionArgs,
-                        @Nullable String sortOrder) {
-
-
+    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         Cursor cursor;
         switch (sUriMatcher.match(uri)){
 
-            case CODE_GUIDE_WITH_ID:{
-                String guideId = uri.getLastPathSegment();
+            case CODE_NOTE_WITH_ID:{
+                String noteId = uri.getLastPathSegment();
 
                 String[] selectionArguments =
-                        new String[]{guideId};
+                        new String[]{noteId};
 
                 cursor = mDbHelper.getReadableDatabase().query(
-                        GuideContract.GuideEntry.TABLE_NAME,
+                        NoteContract.NoteEntry.TABLE_NAME,
                         projection,
-                        GuideContract.GuideEntry._ID+" = ? ",
+                        NoteContract.NoteEntry.COLUMN_NOTE_ID+" = ? ",
                         selectionArguments,
                         null,
                         null,sortOrder);
@@ -71,9 +63,9 @@ public class GuideProvider extends ContentProvider {
 
             }
 
-            case CODE_GUIDE:{
+            case CODE_NOTE:{
                 cursor = mDbHelper.getReadableDatabase().query(
-                        GuideContract.GuideEntry.TABLE_NAME,
+                        NoteContract.NoteEntry.TABLE_NAME,
                         projection,selection,selectionArgs, null,null,sortOrder);
 
                 break;
@@ -95,7 +87,12 @@ public class GuideProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Uri insert(@NonNull Uri uri, @Nullable ContentValues contentValues) {
+    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+        final SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        switch (sUriMatcher.match(uri)){
+            case CODE_NOTE:
+        }
+
         return null;
     }
 
@@ -104,7 +101,7 @@ public class GuideProvider extends ContentProvider {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         switch (sUriMatcher.match(uri)){
-            case CODE_GUIDE:
+            case CODE_NOTE:
                 db.beginTransaction();
                 int rowsInserted = 0;
                 try {
@@ -112,7 +109,7 @@ public class GuideProvider extends ContentProvider {
 
                         long _id =
                                 db.insert(
-                                        GuideContract.GuideEntry.TABLE_NAME,
+                                        NoteContract.NoteEntry.TABLE_NAME,
                                         null,
                                         value
                                 );
@@ -140,18 +137,16 @@ public class GuideProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(@NonNull Uri uri,
-                      @Nullable String selection,
-                      @Nullable String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
         int numRowsDeleted;
 
         if (null == selection) selection = "1";
 
         switch (sUriMatcher.match(uri)){
 
-            case CODE_GUIDE:
+            case CODE_NOTE:
                 numRowsDeleted =mDbHelper.getWritableDatabase().delete(
-                        GuideContract.GuideEntry.TABLE_NAME,
+                       NoteContract.NoteEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -169,15 +164,12 @@ public class GuideProvider extends ContentProvider {
     }
 
     @Override
-    public int update(@NonNull Uri uri,
-                      @Nullable ContentValues values,
-                      @Nullable String selection,
-                      @Nullable String[] selectionArgs) {
+    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         int updateReturn;
         switch (sUriMatcher.match(uri)){
-            case CODE_GUIDE_WITH_ID:
+            case CODE_NOTE_WITH_ID:
                 updateReturn = mDbHelper.getWritableDatabase().update(
-                       GuideContract.GuideEntry.TABLE_NAME,values,selection,selectionArgs);
+                        NoteContract.NoteEntry.TABLE_NAME,values,selection,selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

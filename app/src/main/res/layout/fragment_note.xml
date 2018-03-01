@@ -11,6 +11,13 @@
         android:text="登录后查看旅行记录"
         android:id="@+id/no_note"
         />
+    <ProgressBar
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_gravity="center"
+        android:id="@+id/note_pb"
+        android:visibility="gone"
+        />
 
     <android.support.v7.widget.RecyclerView
         android:layout_width="match_parent"

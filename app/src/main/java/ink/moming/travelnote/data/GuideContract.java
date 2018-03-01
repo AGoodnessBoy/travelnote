@@ -17,12 +17,12 @@ public class GuideContract {
             =Uri.parse("content://"+CONTENT_AUTHORITY);
 
 
-    public static final String PATH_MOVIE = "guide";
+    public static final String PATH_GUIDE = "guide";
 
     public static final class GuideEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI =BASE_CONTENT_URI.buildUpon()
-                .appendPath(PATH_MOVIE)
+                .appendPath(PATH_GUIDE)
                 .build();
         public static final String TABLE_NAME = "guide";
 

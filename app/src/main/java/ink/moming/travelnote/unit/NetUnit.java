@@ -23,9 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -43,6 +41,8 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 /**
+ * 工具类
+ * 网络数据加载 传输
  * Created by Moming-Desgin on 2018/2/14.
  */
 
@@ -54,13 +54,14 @@ public class NetUnit {
     public static final String HE_WEATHER_API ="https://free-api.heweather.com/now";
     public static final String USER_API ="http://api.moming.ink/db_user_func.php";
     public static final String NOTE_API ="http://api.moming.ink/db_note_func.php";
-    public static final String IMAGE_API ="http://api.moming.ink/image/";
+    public static final String NOTE_LSIT_API ="http://api.moming.ink/notelist.php";
 
 
 
     final static String APIKEY_PARAM="key";
     final static String ADDRESS_PARAM="address";
 
+    //地理坐标URL生成
     public static URL buildGoogleMapGeocodingUrl(String address,String key){
         Uri buildUri = Uri.parse(GOOGLE_MAP_GEOCODING_API).buildUpon()
                 .appendQueryParameter(ADDRESS_PARAM,address)
@@ -77,6 +78,7 @@ public class NetUnit {
         return url;
     }
 
+    //url响应
     public static String getResponseFromHttpUrl(URL url)throws IOException {
         HttpURLConnection urlConnection =(HttpURLConnection)url.openConnection();
         urlConnection.setConnectTimeout(5000);
@@ -97,16 +99,8 @@ public class NetUnit {
         }
     }
 
-    //获取cityList
 
-    public static JSONArray getCityListFromBaiduAPI(){
-
-        HtmlAnalysis htmlTools = new  HtmlAnalysis();
-        return htmlTools.getCityList();
-    }
-
-    //获取cityContent
-
+    //城市内容加载
     public static JSONObject getCityContentFromBaiduAPI(String link){
 
         Log.d(TAG,link);
@@ -119,43 +113,7 @@ public class NetUnit {
         return cityContent;
     }
 
-    public static ArrayList<ContentValues> buildGuideCityListValues()
-        throws JSONException {
-        JSONArray list = getCityListFromBaiduAPI();
-        Log.d(TAG,list.toString());
-        Log.d(TAG,Integer.toString(list.length()));
-
-        ArrayList<ContentValues> contentValues = new ArrayList<ContentValues>();
-
-        if (list!=null){
-            Log.v("tag",Integer.toString(list.length()));
-            for (int i =0;i<list.length();i++){
-
-                JSONArray region = list.getJSONObject(i).getJSONArray("regions");
-                Log.v("tag",Integer.toString(region.length()));
-                for (int j=0;j<region.length();j++){
-
-                    JSONArray city = region.getJSONObject(j).getJSONArray("citys");
-                    Log.v("tag",Integer.toString(city.length()));
-                    for (int k =0;k<city.length();k++){
-                        ContentValues value = new ContentValues();
-                        value.put(GuideContract.GuideEntry.COLUMN_CITY_NAME,city.getJSONObject(k).getString("city"));
-                        value.put(GuideContract.GuideEntry.COLUMN_CITY_LINK,city.getJSONObject(k).getString("url"));
-                        value.put(GuideContract.GuideEntry.COLUMN_UPDATE_TAG,"0");
-                        contentValues.add(value);
-                    }
-                }
-
-            }
-
-            return contentValues;
-
-
-        }else {
-            return null;
-        }
-    }
-
+    //城市列表加载
     public static ArrayList<ContentValues> buildGuideCityListValuesFromFile(Context context)
             throws JSONException {
 
@@ -186,7 +144,7 @@ public class NetUnit {
 
     }
 
-
+    //地理坐标
     public static LatLng getCityLocationFromGoogleMap(String address){
 
         String api_key = "AIzaSyDayp6XbBRgmBCsuDNRXBzKRNeKKCL1m2k";
@@ -232,7 +190,7 @@ public class NetUnit {
         return  loc;
     }
 
-
+    //天气信息加载
     public static String getWeatherFromHe(String city){
         Uri weather_uri = Uri.parse(HE_WEATHER_API).buildUpon()
                 .appendQueryParameter("loaction",city)
@@ -256,9 +214,7 @@ public class NetUnit {
 
     }
 
-
-
-
+    //Raw资源加载
     private static String openRawResource(Context context,int id)throws Resources.NotFoundException{
         InputStream stream = context.getResources().openRawResource(id);
         String res=null;
@@ -285,7 +241,7 @@ public class NetUnit {
     }
 
 
-
+    //用户密码加密
     public static String md5(String content) {
         byte[] hash;
         try {
@@ -306,7 +262,7 @@ public class NetUnit {
         return hex.toString();
     }
 
-
+    //用户登录
     public static String userLogin(String email){
         Uri uri = Uri.parse(USER_API).buildUpon()
                 .appendQueryParameter("action","login")
@@ -327,6 +283,7 @@ public class NetUnit {
 
     }
 
+    //用户注册
     public static String userRegister(String name,String email,String pass){
         Uri uri = Uri.parse(USER_API).buildUpon()
                 .appendQueryParameter("action","register")
@@ -350,16 +307,11 @@ public class NetUnit {
 
     }
 
+    //上传旅行笔记
+    public static Boolean uploadNote(Context context,String text,String image,int id){
 
-    public static String uploadNote(Context context,String text,String image,int id){
+        final boolean[] uploadStatus = {false};
 
-        Uri uri = Uri.parse(NOTE_API).buildUpon()
-                .appendQueryParameter("action","upload")
-                .appendQueryParameter("uid",Integer.toString(id))
-                .appendQueryParameter("text",text)
-                .build();
-        URL url = null;
-        final String[] json = {null};
 
         File sdcache = context.getExternalCacheDir();
         int cacheSize = 10 * 1024 * 1024;
@@ -374,49 +326,52 @@ public class NetUnit {
 
         MultipartBody.Builder mbody=new MultipartBody.Builder().setType(MultipartBody.FORM);
         File img1=new File(image);
-        mbody.addFormDataPart("image",img1.getName(),RequestBody.create(MediaType.parse("image/jpg"),img1));
+        mbody.addFormDataPart("uid",Integer.toString(id));
+        mbody.addFormDataPart("text",text);
+        mbody.addFormDataPart("tn_image",img1.getName(),RequestBody.create(MediaType.parse("image/jpg"),img1));
 
-        try{
-            Log.d(TAG,uri.toString());
-            url = new URL(uri.toString());
+        Request request = new Request.Builder()
+                .url(NOTE_API).post(mbody.build())
+                .build();
+        Log.d(TAG,request.toString());
 
-            Request request = new Request.Builder()
-                    .url(url).post(mbody.build())
-                    .build();
+        mOkHttpClient.newCall(request).enqueue(new Callback() {
 
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.i(TAG, e.getMessage());
+            }
 
-            mOkHttpClient.newCall(request).enqueue(new Callback() {
-
-                String responceStr = "";
-                @Override
-                public void onFailure(Call call, IOException e) {
-
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                String resBody = response.body().string();
+                Log.i(TAG, resBody);
+                try {
+                    JSONObject jsonObject = new JSONObject(resBody);
+                    Log.i(TAG, Integer.toString(jsonObject.getInt("status")));
+                    if (Integer.toString(jsonObject.getInt("status")).equals("300") ){
+                        uploadStatus[0] =true;
+                    }else {
+                        uploadStatus[0] =false;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
 
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    Log.i(TAG, response.body().string());
-                    responceStr = response.body().string();
-                    json[0] = responceStr;
 
-                }
-            });
+            }
+        });
 
-
-        }catch (MalformedURLException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return json[0];
+        return uploadStatus[0];
 
     }
 
+    //获取用户笔记
     public static String getNoteList(int id){
 
-        Uri uri = Uri.parse(NOTE_API).buildUpon()
+        Uri uri = Uri.parse(NOTE_LSIT_API).buildUpon()
                 .appendQueryParameter("action","list")
-                .appendQueryParameter("uid",Integer.toString(id))
+                .appendQueryParameter("uidGET",Integer.toString(id))
                 .build();
         URL url = null;
         String json = null;
@@ -436,10 +391,5 @@ public class NetUnit {
 
 
 
-    public static String getStringToday() {
-        Date currentTime = new Date();
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd HHmmss");
-        String dateString = formatter.format(currentTime);
-        return dateString;
-    }
+
 }

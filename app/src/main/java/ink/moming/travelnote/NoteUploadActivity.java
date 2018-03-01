@@ -15,15 +15,12 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.unit.BitmapUnit;
@@ -154,45 +151,19 @@ public class NoteUploadActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... voids) {
             Context context = NoteUploadActivity.this;
-            Boolean restatus = false;
-            String json = NetUnit.uploadNote(context,mText,mImage, GuidePerference.getUserId(context));
-            if (json!=null){
-                try {
-                    JSONObject jsonObject = new JSONObject(json);
-                    int status = jsonObject.getInt("status");
-                    if (status==300){
-                        //成功
-                        restatus = true;
-                    }else if (status==301){
-                        //失败
-                        restatus = false;
-                    }else if (status==302){
-                        //失败
-                        restatus =  false;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    restatus = false;
-                }
+            return NetUnit.uploadNote(context,mText,mImage, GuidePerference.getUserId(context));
 
-
-            }else {
-                restatus = false;
-            }
-
-            return restatus;
         }
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             super.onPostExecute(aBoolean);
 
-            if (aBoolean){
 
-                finish();
-            }else {
-                Toast.makeText(NoteUploadActivity.this, "上传失败", Toast.LENGTH_SHORT).show();
-            }
+            Intent intent = new Intent();
+            intent.putExtra("status",aBoolean);
+            setResult(80,intent);
+            finish();
         }
     }
 
@@ -214,6 +185,10 @@ public class NoteUploadActivity extends AppCompatActivity {
                     cursor.moveToFirst();
                     // 最后根据索引值获取图片路径
                     photoPath = cursor.getString(column_index);
+                    Log.d(TAG,photoPath);
+                    mBitmap = BitmapUnit.decodeSampledBitmapFromFd(photoPath, 300, 300);
+                    mUploadImage.setImageBitmap(mBitmap);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -225,10 +200,8 @@ public class NoteUploadActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (!TextUtils.isEmpty(photoPath)) {
-            mBitmap = BitmapUnit.decodeSampledBitmapFromFd(photoPath, 300, 300);
-            //将路径设置为空，防止在手机休眠后返回Activity调用此方法时添加照片
-            photoPath = null;
-        }
+
     }
+
+
 }
