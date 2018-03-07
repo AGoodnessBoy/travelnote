@@ -39,7 +39,11 @@
 
         <provider
             android:name=".data.GuideProvider"
-            android:authorities="ink.moming.travelnote" />
+            android:authorities="ink.moming.travelnote.data.GuideProvider" />
+        <provider
+        android:name=".data.NoteProvider"
+        android:authorities="ink.moming.travelnote.data.NoteProvider" />
+
 
         <activity
             android:name=".CityListActivity"

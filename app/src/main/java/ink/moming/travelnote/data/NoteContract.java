@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
 public class NoteContract {
 
     public static final String CONTENT_AUTHORITY =
-            "ink.moming.travelnote";
+            "ink.moming.travelnote.data.NoteProvider";
 
     public static final Uri BASE_CONTENT_URI
             =Uri.parse("content://"+CONTENT_AUTHORITY);

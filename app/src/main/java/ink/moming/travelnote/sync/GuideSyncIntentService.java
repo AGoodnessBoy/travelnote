@@ -27,6 +27,7 @@ public class GuideSyncIntentService extends IntentService {
                     handleActionSyncGuideList();
                     break;
                 case ACTION_NOTE_LIST:
+                    handleActionSyncNoteList();
                     break;
                 default:
                     break;
@@ -42,10 +43,20 @@ public class GuideSyncIntentService extends IntentService {
         context.startService(intent);
     }
 
+    public static void startActionSyncNoteList(Context context){
+        Intent intent = new Intent(context,GuideSyncIntentService.class);
+        intent.setAction(ACTION_NOTE_LIST);
+        context.startService(intent);
+    }
+
 
     private void handleActionSyncGuideList(){
         GuideSyncTask.syncGuide(this);
         //startActionSyncGuideList(this);
+    }
+
+    private void handleActionSyncNoteList(){
+        GuideSyncTask.syncNote(this);
     }
 
 

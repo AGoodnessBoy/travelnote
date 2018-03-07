@@ -1,12 +1,17 @@
 package ink.moming.travelnote.fragment;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,14 +27,14 @@ import com.squareup.picasso.Picasso;
 import ink.moming.travelnote.LoginActivity;
 import ink.moming.travelnote.NoteUploadActivity;
 import ink.moming.travelnote.R;
-import ink.moming.travelnote.adapter.NoteListLoader;
 import ink.moming.travelnote.data.GuidePerference;
-import ink.moming.travelnote.data.NoteBean;
+import ink.moming.travelnote.data.NoteContract;
+import ink.moming.travelnote.sync.GuideSyncUtils;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class NoteFragment extends Fragment implements LoaderManager.LoaderCallbacks<NoteBean[]>{
+public class NoteFragment extends Fragment {
 
     private RecyclerView mNoteList;
     private FloatingActionButton mAddBtn;
@@ -40,9 +45,18 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
     public static final int USER_NOTE_LOAD = 28;
     public static final String TAG = NoteFragment.class.getSimpleName();
 
+    public LoaderManager.LoaderCallbacks<Cursor> callbacks;
+
+    public static final String[] MAIN_NOTE_PROJECTION ={
+            NoteContract.NoteEntry.COLUMN_NOTE_ID,
+            NoteContract.NoteEntry.COLUMN_NOTE_TEXT,
+            NoteContract.NoteEntry.COLUMN_NOTE_IMAGE,
+            NoteContract.NoteEntry.COLUMN_NOTE_TIME,
+            NoteContract.NoteEntry.COLUMN_NOTE_USER,
+    };
 
 
-    private NoteBean[] mData;
+
     private NoteAdapter adapter;
 
 
@@ -60,9 +74,13 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
         mAddBtn = view.findViewById(R.id.fab_note);
         mNoData = view.findViewById(R.id.no_note);
         mPb = view.findViewById(R.id.note_pb);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+
+
 
         adapter = new NoteAdapter();
         mNoteList.setAdapter(adapter);
+        mNoteList.setLayoutManager(linearLayoutManager);
 
         mAddBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -77,6 +95,10 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
                 }
             }
         });
+
+        callbacks=getCallbacks(getContext());
+
+        GuideSyncUtils.flashNoteList(getContext());
 
 
 
@@ -96,7 +118,8 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
             GuidePerference.saveUserStatus(getContext(),mEmail,name,id);
             Bundle idBundle = new Bundle();
             idBundle.putInt("userid",id);
-            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,this);
+            GuideSyncUtils.flashNoteList(getContext());
+            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,callbacks);
             //刷新数据
 
         }
@@ -104,9 +127,10 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
         if (requestCode == UP_RES_NOTE && resultCode == 80){
             boolean status = data.getBooleanExtra("status",false);
             if (status){
+                GuideSyncUtils.flashNoteList(getContext());
                 Bundle idBundle = new Bundle();
                 idBundle.putInt("userid",GuidePerference.getUserId(getContext()));
-                getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,this);
+                getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,callbacks);
             }else {
                 Toast.makeText(getContext(), "上传失败", Toast.LENGTH_SHORT).show();
             }
@@ -126,60 +150,70 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
             mNoteList.setVisibility(View.GONE);
         }else {
             int userid = GuidePerference.getUserId(getContext());
+            GuideSyncUtils.flashNoteList(getContext());
             Bundle bundle = new Bundle();
             bundle.putInt("userid",userid);
             Log.d(TAG,"onResume"+userid);
-            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,bundle,this);
+            callbacks=getCallbacks(getContext());
+            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,bundle,callbacks);
         }
     }
 
-    @Override
-    public Loader<NoteBean[]> onCreateLoader(int id, Bundle args) {
 
-       switch (id){
-           case USER_NOTE_LOAD:
-               Log.d(TAG,"onCreateLoader");
-               mPb.setVisibility(View.VISIBLE);
-               mNoteList.setVisibility(View.GONE);
-               mNoData.setVisibility(View.GONE);
-               int userid = args.getInt("userid");
-               Log.d(TAG,"onCreateLoader "+userid);
-               return new NoteListLoader(getContext(),userid);
-           default:
-              throw  new IllegalArgumentException() ;
-       }
-    }
+    private LoaderManager.LoaderCallbacks<Cursor> getCallbacks(final Context context){
+        Log.d(TAG,"getCallbacks");
+        return new LoaderManager.LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                switch (id){
+                    case USER_NOTE_LOAD:
+                        //显示加载...
+                        mPb.setVisibility(View.VISIBLE);
+                        int userid = args.getInt("userid");
+                        Uri uri = NoteContract.NoteEntry.CONTENT_URI;
+                        String selection = NoteContract.NoteEntry.COLUMN_NOTE_USER+ "= ?";
+                        String[] selectionArgs = new String[]{Integer.toString(userid)};
+                        return new CursorLoader(context,uri,MAIN_NOTE_PROJECTION,selection,selectionArgs,null);
 
-    @Override
-    public void onLoadFinished(Loader<NoteBean[]> loader, NoteBean[] data) {
-        mPb.setVisibility(View.GONE);
-        if (data!=null){
-            mData = data;
-            //移除无数据
-            Log.d(TAG,"onLoadFinished has");
-            mNoData.setVisibility(View.GONE);
-            mNoteList.setVisibility(View.VISIBLE);
-            adapter.swapData(mData);
+                    default:
+                        throw new RuntimeException("Loader Not Implemented: " + id);
+                }
+            }
 
-        }else {
-            //显示无数据
-            Log.d(TAG,"onLoadFinished none");
-            mNoData.setVisibility(View.VISIBLE);
-            mNoData.setText("还没有上传笔记");
-            mNoteList.setVisibility(View.GONE);
-        }
-    }
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+                boolean cursorHasValidData = false;
+                mPb.setVisibility(View.GONE);
+                if (data!=null && data.moveToFirst()){
+                    cursorHasValidData = true;
+                }
+                if (!cursorHasValidData){
+                    mNoData.setVisibility(View.VISIBLE);
+                    mNoData.setText("未找到笔记记录！");
+                    mNoteList.setVisibility(View.GONE);
+                    return;
+                }
+                mNoteList.setVisibility(View.VISIBLE);
+                mNoData.setVisibility(View.GONE);
+                adapter.swapData(data);
 
-    @Override
-    public void onLoaderReset(Loader<NoteBean[]> loader) {
-        adapter.swapData(null);
+
+            }
+
+            @Override
+            public void onLoaderReset(Loader<Cursor> loader) {
+
+                adapter.swapData(null);
+            }
+        };
+
     }
 
 
 
     public class NoteAdapter extends RecyclerView.Adapter<NoteAdapter.NoteViewHolder>{
 
-        private NoteBean[] mNoteData;
+        private Cursor mNoteData;
 
 
         @Override
@@ -193,21 +227,27 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
 
         @Override
         public void onBindViewHolder(NoteViewHolder holder, int position) {
-            NoteBean note = mNoteData[position];
-            if (note.getNotetext().isEmpty()){
+            mNoteData.moveToPosition(position);
+
+            String text = mNoteData.getString(mNoteData.getColumnIndex(NoteContract.NoteEntry.COLUMN_NOTE_TEXT));
+            if (text.equals("")){
                 holder.notetext.setVisibility(View.GONE);
             }else {
                 holder.notetext.setVisibility(View.VISIBLE);
-                holder.notetext.setText(note.getNotetext());
+                holder.notetext.setText(text);
             }
-            String imagePath = "http://api.moming.ink/images/"+note.getNoteimage()+".jpg";
-            holder.notetime.setText(note.getNotetime());
+
+            String imagebase =  mNoteData.getString(mNoteData.getColumnIndex(NoteContract.NoteEntry.COLUMN_NOTE_IMAGE));
+            String imagePath = "http://api.moming.ink/images/"+imagebase+".jpg";
+
+            String time = mNoteData.getString(mNoteData.getColumnIndex(NoteContract.NoteEntry.COLUMN_NOTE_TIME));
+            holder.notetime.setText(time);
             holder.noteuser.setText(GuidePerference.getUserName(getContext()));
             Picasso.with(getContext()).load(imagePath).into(holder.imageView);
         }
 
 
-        public void swapData(NoteBean[] newData){
+        public void swapData(Cursor newData){
             if (newData!=null){
                 mNoteData = newData;
 
@@ -217,7 +257,11 @@ public class NoteFragment extends Fragment implements LoaderManager.LoaderCallba
 
         @Override
         public int getItemCount() {
-            return mNoteData.length;
+            if (mNoteData!=null){
+                return mNoteData.getCount();
+            }else {
+                return 0;
+            }
         }
 
         public class NoteViewHolder extends RecyclerView.ViewHolder {

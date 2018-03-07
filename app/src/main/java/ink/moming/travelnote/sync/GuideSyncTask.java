@@ -3,7 +3,6 @@ package ink.moming.travelnote.sync;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
@@ -12,11 +11,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
+import ink.moming.travelnote.data.NoteContract;
 import ink.moming.travelnote.unit.NetUnit;
 
 /**
@@ -58,6 +57,48 @@ public class GuideSyncTask {
             e.printStackTrace();
         }
     }
+
+    synchronized public static void syncNote(Context context){
+
+        try {
+            String notestr = NetUnit.getNoteList(GuidePerference.getUserId(context));
+            JSONObject noteObj = new JSONObject(notestr);
+
+            if (noteObj.getString("status").equals("400")){
+                JSONArray noteArr = noteObj.getJSONArray("data");
+                ContentValues[] contentValues = new ContentValues[noteArr.length()];
+                for (int i=0;i<noteArr.length();i++){
+                    ContentValues cv = new ContentValues();
+                    cv.put(NoteContract.NoteEntry.COLUMN_NOTE_ID,noteArr.getJSONObject(i).getInt("note_id"));
+                    cv.put(NoteContract.NoteEntry.COLUMN_NOTE_TEXT,noteArr.getJSONObject(i).getString("note_text"));
+                    cv.put(NoteContract.NoteEntry.COLUMN_NOTE_IMAGE,noteArr.getJSONObject(i).getString("note_img"));
+                    cv.put(NoteContract.NoteEntry.COLUMN_NOTE_TIME,noteArr.getJSONObject(i).getString("note_time"));
+                    cv.put(NoteContract.NoteEntry.COLUMN_NOTE_USER,noteArr.getJSONObject(i).getInt("note_user"));
+                    contentValues[i]=cv;
+                }
+                ContentResolver noteresolver = context.getContentResolver();
+                noteresolver.delete(NoteContract.NoteEntry.CONTENT_URI,null,null);
+                int status = noteresolver.bulkInsert(NoteContract.NoteEntry.CONTENT_URI,contentValues);
+
+                if (status!=0){
+                    Log.d(TAG,"笔记插入成功");
+                }else {
+                    Log.d(TAG,"笔记插入失败");
+
+                }
+
+            }else {
+                return;
+            }
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+
 
 
     public static Cursor upDateCityInfoValuesById(Context context,String cityname) throws JSONException {

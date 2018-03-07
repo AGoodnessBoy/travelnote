@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical">
     <LinearLayout
@@ -22,6 +22,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
+                android:scaleType="centerInside"
                 android:src="@drawable/ic_account_circle" />
             <TextView
                 android:layout_width="match_parent"
@@ -48,13 +49,12 @@
                 />
 
             <ImageView
+                android:id="@+id/note_img"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:layout_margin="8dp"
                 android:layout_marginRight="16dp"
-                android:background="@color/lineColor"
-                android:id="@+id/note_img"
-                />
+                android:background="@color/lineColor" />
 
             <TextView
                 android:layout_width="match_parent"

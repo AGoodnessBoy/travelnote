@@ -11,7 +11,7 @@ public class GuideContract {
 
 
     public static final String CONTENT_AUTHORITY =
-            "ink.moming.travelnote";
+            "ink.moming.travelnote.data.GuideProvider";
 
     public static final Uri BASE_CONTENT_URI
             =Uri.parse("content://"+CONTENT_AUTHORITY);

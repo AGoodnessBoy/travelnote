@@ -161,8 +161,6 @@ public class NetUnit {
         if (res!=null){
 
             try {
-
-                Log.d(TAG,res);
                 JSONObject resJson  = new JSONObject(res);
                 if (resJson.getString("status").equals("OK")){
 
