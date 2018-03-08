@@ -32,13 +32,11 @@ import ink.moming.travelnote.R;
 import ink.moming.travelnote.data.GuideContract;
 import okhttp3.Cache;
 import okhttp3.Call;
-import okhttp3.Callback;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 /**
  * 工具类
@@ -306,7 +304,7 @@ public class NetUnit {
     }
 
     //上传旅行笔记
-    public static Boolean uploadNote(Context context,String text,String image,int id){
+    public static Call uploadNote(Context context,String text,String image,int id){
 
         final boolean[] uploadStatus = {false};
 
@@ -333,34 +331,8 @@ public class NetUnit {
                 .build();
         Log.d(TAG,request.toString());
 
-        mOkHttpClient.newCall(request).enqueue(new Callback() {
 
-            @Override
-            public void onFailure(Call call, IOException e) {
-                Log.i(TAG, e.getMessage());
-            }
-
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String resBody = response.body().string();
-                Log.i(TAG, resBody);
-                try {
-                    JSONObject jsonObject = new JSONObject(resBody);
-                    Log.i(TAG, Integer.toString(jsonObject.getInt("status")));
-                    if (Integer.toString(jsonObject.getInt("status")).equals("300") ){
-                        uploadStatus[0] =true;
-                    }else {
-                        uploadStatus[0] =false;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-        });
-
-        return uploadStatus[0];
+        return mOkHttpClient.newCall(request);
 
     }
 

@@ -1,6 +1,7 @@
 package ink.moming.travelnote;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -11,6 +12,8 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,12 +25,22 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.unit.BitmapUnit;
 import ink.moming.travelnote.unit.NetUnit;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class NoteUploadActivity extends AppCompatActivity {
     public static final String TAG = NoteUploadActivity.class.getSimpleName();
+    AlertDialog loading_dialog;
+
 
 
     private ImageView mUploadImage;
@@ -38,11 +51,50 @@ public class NoteUploadActivity extends AppCompatActivity {
     private Button upLoadButton;
     private EditText mUploadText;
 
+    private UploadHandler handler = new UploadHandler(NoteUploadActivity.this);
+
+
+
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static final int UPDATE_SUCCESS = 34;
+    private static final int UPDATE_DEFEATED = 35;
     private static String[] PERMISSIONS_STORAGE = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
+
+    static class UploadHandler extends Handler{
+
+        private Activity mActivity;
+
+        public UploadHandler(Activity activity){
+            mActivity=activity;
+        }
+
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case UPDATE_DEFEATED:
+                    Toast.makeText(mActivity, "上传失败", Toast.LENGTH_SHORT).show();
+
+                    break;
+                case UPDATE_SUCCESS:
+                    Toast.makeText(mActivity, "上传成功", Toast.LENGTH_SHORT).show();
+                    break;
+                default:break;
+
+            }
+        }
+
+    }
+
+    private static void startIntent(Activity activity, boolean value){
+        Intent intent = new Intent();
+        intent.putExtra("status",value);
+        activity.setResult(80,intent);
+    }
+
+
 
 
     @Override
@@ -96,6 +148,7 @@ public class NoteUploadActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (mBitmap!=null){
                     String text=mUploadText.getText().toString();
+                    showLoading_dialog();
                     UploadTask upload = new UploadTask(photoPath,text);
                     upload.execute();
 
@@ -138,7 +191,18 @@ public class NoteUploadActivity extends AppCompatActivity {
         builder.create().show();
     }
 
-    private class UploadTask extends AsyncTask<Void,Void,Boolean>{
+
+    protected void showLoading_dialog(){
+
+        final View loading_view = getLayoutInflater().inflate(R.layout.dialog_loading,null);
+        AlertDialog.Builder builder= new  AlertDialog.Builder(NoteUploadActivity.this);
+        builder.setTitle("上传中...");
+        builder.setView(loading_view);
+        loading_dialog = builder.create();
+        loading_dialog.show();
+    }
+
+    private class UploadTask extends AsyncTask<Void,Void,Call>{
 
         String mImage;
         String mText;
@@ -149,20 +213,54 @@ public class NoteUploadActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(Void... voids) {
+        protected Call doInBackground(Void... voids) {
             Context context = NoteUploadActivity.this;
+
             return NetUnit.uploadNote(context,mText,mImage, GuidePerference.getUserId(context));
+
 
         }
 
         @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            super.onPostExecute(aBoolean);
+        protected void onPostExecute(Call call) {
+            super.onPostExecute(call);
+            loading_dialog.dismiss();
+            call.enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    Log.i(TAG, e.getMessage());
+                    Message messageerr = new Message();
+                    messageerr.what = UPDATE_DEFEATED;
+                    handler.sendMessage(messageerr);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String resBody = response.body().string();
+                    Message message = new Message();
+                    Log.i(TAG, resBody);
+                    try {
+                        JSONObject jsonObject = new JSONObject(resBody);
+                        Log.i(TAG, Integer.toString(jsonObject.getInt("status")));
+                        if (Integer.toString(jsonObject.getInt("status")).equals("300") ){
+
+                            message.what = UPDATE_SUCCESS;
 
 
-            Intent intent = new Intent();
-            intent.putExtra("status",aBoolean);
-            setResult(80,intent);
+                        }else {
+
+                            message.what = UPDATE_DEFEATED;
+
+                        }
+                        handler.sendMessage(message);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
+
             finish();
         }
     }
@@ -202,6 +300,8 @@ public class NoteUploadActivity extends AppCompatActivity {
         super.onResume();
 
     }
+
+
 
 
 }

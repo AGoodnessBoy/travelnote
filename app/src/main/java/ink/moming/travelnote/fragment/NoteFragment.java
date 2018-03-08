@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -115,24 +116,29 @@ public class NoteFragment extends Fragment {
             String mEmail = data.getStringExtra("useremail");
             String name = data.getStringExtra("username");
             int id = data.getIntExtra("userid",0);
+            Log.d(TAG,"request USER_RES_NOTE");
             GuidePerference.saveUserStatus(getContext(),mEmail,name,id);
             Bundle idBundle = new Bundle();
-            idBundle.putInt("userid",id);
-            GuideSyncUtils.flashNoteList(getContext());
-            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,callbacks);
+            idBundle.putInt("userid",GuidePerference.getUserId(getContext()));
             //刷新数据
+            NoteFlashTask task = new NoteFlashTask(idBundle);
+            task.execute();
 
         }
 
         if (requestCode == UP_RES_NOTE && resultCode == 80){
             boolean status = data.getBooleanExtra("status",false);
+            Log.d(TAG,"request UP_RES_NOTE");
+
             if (status){
-                GuideSyncUtils.flashNoteList(getContext());
+                Log.d(TAG,"request TRUE");
                 Bundle idBundle = new Bundle();
                 idBundle.putInt("userid",GuidePerference.getUserId(getContext()));
-                getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,idBundle,callbacks);
+                NoteFlashTask task = new NoteFlashTask(idBundle);
+                task.execute();
+
             }else {
-                Toast.makeText(getContext(), "上传失败", Toast.LENGTH_SHORT).show();
+                Log.d(TAG,"request FALUSE");
             }
 
 
@@ -150,12 +156,41 @@ public class NoteFragment extends Fragment {
             mNoteList.setVisibility(View.GONE);
         }else {
             int userid = GuidePerference.getUserId(getContext());
-            GuideSyncUtils.flashNoteList(getContext());
             Bundle bundle = new Bundle();
             bundle.putInt("userid",userid);
             Log.d(TAG,"onResume"+userid);
-            callbacks=getCallbacks(getContext());
-            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,bundle,callbacks);
+            NoteFlashTask task = new NoteFlashTask(bundle);
+            task.execute();
+        }
+    }
+
+    private class NoteFlashTask extends AsyncTask<Void,Void,Void>{
+        //下拉刷新
+        //上传后刷新 AcitivityResult;
+        //登录刷新
+
+        private Bundle mBundle;
+
+        public NoteFlashTask(Bundle bundle){
+            mBundle = bundle;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            //1 先判断服务器的数量 和 本地内容数量是否一致
+            //2 执行下载程序内容
+            //3 导入本地数据库
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+
+            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,mBundle,callbacks);
         }
     }
 
