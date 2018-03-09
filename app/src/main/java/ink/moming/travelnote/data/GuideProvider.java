@@ -16,7 +16,7 @@ import android.util.Log;
 
 public class GuideProvider extends ContentProvider {
 
-
+    public static final String TAG = GuideProvider.class.getSimpleName();
     public static final int CODE_GUIDE = 100;
     public static final int CODE_GUIDE_WITH_ID = 101;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
@@ -125,7 +125,7 @@ public class GuideProvider extends ContentProvider {
                     db.endTransaction();
                 }
 
-                Log.v("bulk",Integer.toString(rowsInserted));
+                Log.v(TAG,"city:"+Integer.toString(rowsInserted));
 
                 if (rowsInserted > 0){
                     getContext().getContentResolver().notifyChange(uri,null);

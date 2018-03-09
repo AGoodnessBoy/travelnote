@@ -2,6 +2,7 @@ package ink.moming.travelnote.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import com.squareup.picasso.Picasso;
 
 import ink.moming.travelnote.GuideDetailActivity;
 import ink.moming.travelnote.R;
+import ink.moming.travelnote.data.ArticleContract;
 
 /**
  * Created by Moming-Desgin on 2018/2/16.
@@ -24,7 +26,8 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
 
     private final Context mContext;
 
-    private ArticleBean[] mArticles;
+
+    private Cursor mCursor;
     private final static String TAG = GuideListAdapter.class.getSimpleName();
 
 
@@ -33,7 +36,8 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
     }
 
     public String getAricleId(int postion){
-        return mArticles[postion].getA_id();
+        mCursor.moveToPosition(postion);
+        return mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID));
     }
 
     @Override
@@ -60,21 +64,21 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
 
     @Override
     public void onBindViewHolder(GuideListViewHolder holder, int position) {
-        ArticleBean articleBean = mArticles[position];
+        mCursor.moveToPosition(position);
         Context context = holder.itemView.getContext();
         String image_small = "https://gss0.bdstatic.com/6b1IcTe9RMgBo1vgoIiO_jowehsv/maps/services/thumbnails?width=215&height=145&quality=120&align=middle,middle&src=";
         String image_base = "http://hiphotos.baidu.com/lvpics/pic/item/";
-        String image_url = image_small+ image_base+articleBean.a_image+".jpg";
-        holder.mArticleTitle.setText(articleBean.getA_title());
+        String image_url = image_small+ image_base+mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_IMAGE))+".jpg";
+        holder.mArticleTitle.setText(mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_TITLE)));
         Picasso.with(context).load(image_url)
                 .into(holder.mArticleImage);
-        holder.itemView.setTag(articleBean.getA_id());
+        holder.itemView.setTag(mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID)));
     }
 
     @Override
     public int getItemCount() {
-        if (null == mArticles) return 0;
-        return mArticles.length;
+        if (null == mCursor) return 0;
+        return mCursor.getCount();
     }
 
     public class GuideListViewHolder extends RecyclerView.ViewHolder {
@@ -90,39 +94,10 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
         }
     }
 
-    public void swapData(ArticleBean[] newData){
-        mArticles = newData;
+    public void swapData(Cursor newData){
+        mCursor = newData;
         notifyDataSetChanged();
     }
 
-    public static class ArticleBean {
-        public String getA_id() {
-            return a_id;
-        }
 
-        public void setA_id(String a_id) {
-            this.a_id = a_id;
-        }
-
-        public String getA_title() {
-            return a_title;
-        }
-
-        public void setA_title(String a_title) {
-            this.a_title = a_title;
-        }
-
-        public String getA_image() {
-            return a_image;
-        }
-
-        public void setA_image(String a_image) {
-            this.a_image = a_image;
-        }
-
-        public String a_id;
-        public String a_title;
-        public String a_image;
-
-    }
 }

@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -30,12 +31,10 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-
 import ink.moming.travelnote.CityListActivity;
 import ink.moming.travelnote.R;
 import ink.moming.travelnote.adapter.GuideListAdapter;
+import ink.moming.travelnote.data.ArticleContract;
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.sync.GuideSyncUtils;
@@ -76,6 +75,13 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
             GuideContract.GuideEntry.COLUMN_CITY_IMAGES,
             GuideContract.GuideEntry.COLUMN_CITY_ARTICLES,
             GuideContract.GuideEntry.COLUMN_UPDATE_TAG
+    };
+
+    public static final String[] MAIN_ARTICLE_PROJECTION ={
+            ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID,
+            ArticleContract.ArticleEntry.COLUMN_ARTICLE_TITLE,
+            ArticleContract.ArticleEntry.COLUMN_ARTICLE_IMAGE,
+            ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY
     };
 
     //内容加载器
@@ -127,7 +133,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
             getActivity().getSupportLoaderManager().initLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
 
         }else {
-            Log.d(TAG,savedInstanceState.getBundle(CITY_STATUS).getString("city-name"));
+            Log.d(TAG,"状态保存：城市"+savedInstanceState.getBundle(CITY_STATUS).getString("city-name"));
             cityBundle =savedInstanceState.getBundle(CITY_STATUS);
             getActivity().getSupportLoaderManager().restartLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
         }
@@ -139,7 +145,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     public void onStart() {
         super.onStart();
         mCityMap.onStart();
-        Log.d(TAG,"onStart");
 
     }
 
@@ -147,7 +152,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     public void onStop() {
         super.onStop();
         mCityMap.onStop();
-        Log.d(TAG,"onStop");
     }
 
     @Override
@@ -156,21 +160,14 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         Log.d(TAG,"onAttach");
         //同步基础数据
         GuideSyncUtils.initialize(getContext());
-        Log.d(TAG,"initialize");
+        Log.d(TAG,"初始化城市数据initialize");
 
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        Log.d(TAG,"onDetach");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         mCityMap.onDestroy();
-        Log.d(TAG,"onDestroy");
     }
 
     @Override
@@ -186,26 +183,25 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     @Override
     public void onPause() {
         super.onPause();
-        Log.d(TAG,"onPause");
         mCityMap.onPause();
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.d(TAG,"onSaveInstanceState");
+        Log.d(TAG,"Guide onSaveInstanceState");
 
         if (cityBundle!=null){
 
             outState.putBundle(CITY_STATUS,cityBundle);
-            Log.d(TAG,outState.getBundle(CITY_STATUS).getString("city-name"));
+            Log.d(TAG,"状态输出："+outState.getBundle(CITY_STATUS).getString("city-name"));
         }
     }
 
     //初始化UI
 
     private void initUI(View view){
-        Log.d(TAG,"initUI");
+        Log.d(TAG,"初始化UIinitUI");
 
         mGuideList = view.findViewById(R.id.guide_list);
         mCityNameTextView = view.findViewById(R.id.city_name);
@@ -246,35 +242,15 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                 cityBundle.clear();
             }
             cityBundle.putString("city-name",city);
+
+            Toast.makeText(getActivity(),GuidePerference.getCityName(getContext()),Toast.LENGTH_LONG).show();
             getActivity().getSupportLoaderManager().restartLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
         }
 
     }
 
-    private GuideListAdapter.ArticleBean[] getArticleFromJson(String s) throws JSONException {
-
-        GuideListAdapter.ArticleBean[] articleBeans =null;
-        JSONArray array = new JSONArray(s);
-        if (array.length()>0){
-            articleBeans = new GuideListAdapter.ArticleBean[array.length()];
-            for (int i = 0;i<array.length();i++){
-                GuideListAdapter.ArticleBean item = new GuideListAdapter.ArticleBean();
-                item.setA_id(array.getJSONObject(i).getString("nid"));
-                item.setA_image(array.getJSONObject(i)
-                        .getJSONArray("album_pic_list")
-                        .getJSONObject(0)
-                        .getString("pic_url"));
-                item.setA_title(array.getJSONObject(i).getString("title"));
-                articleBeans[i] = item;
-            }
-            return articleBeans;
-        }else {
-            return null;
-        }
-    }
-
     private LoaderManager.LoaderCallbacks<Cursor> getCallbacks(final Context context){
-        Log.d(TAG,"getCallbacks");
+        Log.d(TAG,"获取加载器getCallbacks");
         return new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -282,6 +258,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                     case ID_GUIDE_LOADER:
                         //显示加载...
                         mProgressBar.setVisibility(View.VISIBLE);
+                        mGuideList.setVisibility(View.INVISIBLE);
                         String cityname = args.getString("city-name");
                         Uri uri = GuideContract.GuideEntry.CONTENT_URI;
                         String selection = GuideContract.GuideEntry.COLUMN_CITY_NAME+ "= ?";
@@ -305,8 +282,28 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                 }
                 String cityname = data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_NAME));
                 mCityNameTextView.setText(cityname);
-                UpdateCityInfo updateCityInfo = new UpdateCityInfo();
-                updateCityInfo.execute(cityname);
+                if (data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_UPDATE_TAG)).equals("0")){
+                    Log.d(TAG,"网络加载");
+                    UpdateCityInfo updateCityInfo = new UpdateCityInfo();
+                    updateCityInfo.execute(cityname);
+                }else {
+                    mProgressBar.setVisibility(View.GONE);
+                    mGuideList.setVisibility(View.VISIBLE);
+                    mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
+                    String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
+                            data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
+                    Picasso.with(getContext()).load(image_link).into(mCityImageView);
+                    //loader article
+                    Log.d(TAG,"本地加载");
+                    Uri uri = ArticleContract.ArticleEntry.CONTENT_URI;
+                    String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
+                    String[] selectionArgs = new String[]{cityname};
+                    Cursor cursor = getActivity().getContentResolver().query(uri,MAIN_ARTICLE_PROJECTION,
+                            selection,selectionArgs,null);
+                    if (cursor!=null&&cursor.getCount()>0){
+                        mGuideListAdapter.swapData(cursor);
+                    }
+                }
 
             }
 
@@ -323,14 +320,14 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        Log.d(TAG,"onMapReady");
+        Log.d(TAG,"地图加载onMapReady");
 
         boolean success = googleMap.setMapStyle(
                 MapStyleOptions.loadRawResourceStyle(getContext(),R.raw.map_style)
         );
 
         if (!success){
-            Log.e(TAG, "Style parsing failed.");
+            Log.e(TAG, "地图样式加载失败Style parsing failed.");
         }
 
         map = googleMap;
@@ -343,37 +340,31 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     //更新城市
     private class UpdateCityInfo extends AsyncTask<String,Void,Cursor>{
 
+        String cityname;
+
         @Override
         protected Cursor doInBackground(String... strings) {
-            String cityName = strings[0];
-            return GuideSyncUtils.updateCitySync(getContext(),cityName);
+            cityname = strings[0];
+            return GuideSyncUtils.updateCitySync(getContext(),cityname);
         }
         @Override
         protected void onPostExecute(Cursor data) {
             super.onPostExecute(data);
             data.moveToFirst();
+            mProgressBar.setVisibility(View.GONE);
+            mGuideList.setVisibility(View.VISIBLE);
             mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
             String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
                     data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
             Picasso.with(getContext()).load(image_link).into(mCityImageView);
-            GuideListAdapter.ArticleBean[] articleBeans = null;
-            try {
-                articleBeans = getArticleFromJson(
-                        data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_ARTICLES)));
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            if (articleBeans!=null){
 
-                mNoDataTextView.setVisibility(View.GONE);
-                mProgressBar.setVisibility(View.GONE);
-                mGuideListAdapter.swapData(articleBeans);
-                Log.d(TAG,"article swapData");
-            }else {
-                //list 无数据
-                mNoDataTextView.setVisibility(View.VISIBLE);
-                mGuideList.setVisibility(View.INVISIBLE);
-                mProgressBar.setVisibility(View.GONE);
+            Uri uri = ArticleContract.ArticleEntry.CONTENT_URI;
+            String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
+            String[] selectionArgs = new String[]{cityname};
+            Cursor cursor = getActivity().getContentResolver().query(uri,MAIN_ARTICLE_PROJECTION,
+                    selection,selectionArgs,null);
+            if (cursor!=null&&cursor.getCount()>0){
+                mGuideListAdapter.swapData(cursor);
             }
 
         }
@@ -389,7 +380,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         protected LatLng doInBackground(String... strings) {
 
             String address = strings[0];
-            Log.d(TAG,address);
+            Log.d(TAG,"Map定位 当前选择城市："+address);
             return NetUnit.getCityLocationFromGoogleMap(address);
         }
 
@@ -397,7 +388,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         protected void onPostExecute(LatLng latLng) {
             super.onPostExecute(latLng);
             if (latLng!=null){
-                Log.d(TAG,"MapGeocodingTask"+latLng.toString());
+                Log.d(TAG,"Map定位 MapGeocodingTask"+latLng.toString());
             }
             cityLatlng = latLng;
             if (cityLatlng!=null) {
@@ -409,7 +400,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
 
 
     public void upDateGuide(){
-        Log.d(TAG,"upDateGuide");
+        Log.d(TAG,"刷新 upDateGuide");
 
             Bundle bundle = new Bundle();
             bundle.putString("city-name",GuidePerference.getCityName(getContext()));

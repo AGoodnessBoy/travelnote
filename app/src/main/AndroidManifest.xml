@@ -43,6 +43,9 @@
         <provider
         android:name=".data.NoteProvider"
         android:authorities="ink.moming.travelnote.data.NoteProvider" />
+        <provider
+            android:authorities="ink.moming.travelnote.data.ArticleProvider"
+            android:name=".data.ArticleProvider"/>
 
 
         <activity

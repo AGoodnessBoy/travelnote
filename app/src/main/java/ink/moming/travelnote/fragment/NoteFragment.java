@@ -1,6 +1,8 @@
 package ink.moming.travelnote.fragment;
 
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -8,10 +10,12 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -25,12 +29,17 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import ink.moming.travelnote.LoginActivity;
 import ink.moming.travelnote.NoteUploadActivity;
 import ink.moming.travelnote.R;
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.data.NoteContract;
 import ink.moming.travelnote.sync.GuideSyncUtils;
+import ink.moming.travelnote.unit.NetUnit;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -41,10 +50,12 @@ public class NoteFragment extends Fragment {
     private FloatingActionButton mAddBtn;
     private TextView mNoData;
     private ProgressBar mPb;
+    private SwipeRefreshLayout mNoteRefreshLayout;
     public static final int USER_RES_NOTE = 44;
     public static final int UP_RES_NOTE = 45;
     public static final int USER_NOTE_LOAD = 28;
     public static final String TAG = NoteFragment.class.getSimpleName();
+
 
     public LoaderManager.LoaderCallbacks<Cursor> callbacks;
 
@@ -75,6 +86,7 @@ public class NoteFragment extends Fragment {
         mAddBtn = view.findViewById(R.id.fab_note);
         mNoData = view.findViewById(R.id.no_note);
         mPb = view.findViewById(R.id.note_pb);
+        mNoteRefreshLayout = view.findViewById(R.id.note_frash);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
 
 
@@ -99,7 +111,21 @@ public class NoteFragment extends Fragment {
 
         callbacks=getCallbacks(getContext());
 
-        GuideSyncUtils.flashNoteList(getContext());
+        mNoteRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                if (GuidePerference.getUserStatus(getContext())){
+                    Bundle bundle = new Bundle();
+                    bundle.putInt("userid",GuidePerference.getUserId(getContext()));
+                    NoteFlashTask task = new NoteFlashTask(bundle);
+                    task.execute();
+                }else {
+                    showSnackbar(mNoteRefreshLayout,"暂未登录",800);
+                    mNoteRefreshLayout.setRefreshing(false);
+                }
+
+            }
+        });
 
 
 
@@ -116,7 +142,7 @@ public class NoteFragment extends Fragment {
             String mEmail = data.getStringExtra("useremail");
             String name = data.getStringExtra("username");
             int id = data.getIntExtra("userid",0);
-            Log.d(TAG,"request USER_RES_NOTE");
+            Log.d(TAG,"Note 返回 用户登录");
             GuidePerference.saveUserStatus(getContext(),mEmail,name,id);
             Bundle idBundle = new Bundle();
             idBundle.putInt("userid",GuidePerference.getUserId(getContext()));
@@ -128,17 +154,17 @@ public class NoteFragment extends Fragment {
 
         if (requestCode == UP_RES_NOTE && resultCode == 80){
             boolean status = data.getBooleanExtra("status",false);
-            Log.d(TAG,"request UP_RES_NOTE");
+            Log.d(TAG,"Note 返回 用户上传");
 
             if (status){
-                Log.d(TAG,"request TRUE");
+                Log.d(TAG," Note request TRUE");
                 Bundle idBundle = new Bundle();
                 idBundle.putInt("userid",GuidePerference.getUserId(getContext()));
                 NoteFlashTask task = new NoteFlashTask(idBundle);
                 task.execute();
 
             }else {
-                Log.d(TAG,"request FALUSE");
+                Log.d(TAG," Note request FALUSE");
             }
 
 
@@ -146,10 +172,26 @@ public class NoteFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
+    public void showSnackbar(View view, String message, int duration)
+    {
+        Snackbar.make(view, message, duration).show();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         if (!GuidePerference.getUserStatus(getContext())){
-            Log.d(TAG,"onResume no login");
+            Log.d(TAG,"Note onResume no login");
             mPb.setVisibility(View.GONE);
             mNoData.setVisibility(View.VISIBLE);
             mNoData.setText("登录后查看");
@@ -158,13 +200,13 @@ public class NoteFragment extends Fragment {
             int userid = GuidePerference.getUserId(getContext());
             Bundle bundle = new Bundle();
             bundle.putInt("userid",userid);
-            Log.d(TAG,"onResume"+userid);
-            NoteFlashTask task = new NoteFlashTask(bundle);
-            task.execute();
+            Log.d(TAG,"Note onResume "+userid);
+            GuideSyncUtils.flashNoteList(getContext());
+            getActivity().getSupportLoaderManager().initLoader(USER_NOTE_LOAD,bundle,callbacks);
         }
     }
 
-    private class NoteFlashTask extends AsyncTask<Void,Void,Void>{
+    private class NoteFlashTask extends AsyncTask<Void,Void,Boolean>{
         //下拉刷新
         //上传后刷新 AcitivityResult;
         //登录刷新
@@ -176,27 +218,63 @@ public class NoteFragment extends Fragment {
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Boolean doInBackground(Void... voids) {
 
-            //1 先判断服务器的数量 和 本地内容数量是否一致
-            //2 执行下载程序内容
-            //3 导入本地数据库
-            return null;
+            mNoteRefreshLayout.setRefreshing(true);
+            String update = NetUnit.getNoteList(GuidePerference.getUserId(getContext()));
+            try {
+                JSONObject data =new JSONObject(update);
+                if (data.getString("status").equals("400")){
+                    JSONArray noteArr = data.getJSONArray("data");
+                    ContentValues[] contentValues = new ContentValues[noteArr.length()];
+                    for (int i=0;i<noteArr.length();i++){
+                        ContentValues cv = new ContentValues();
+                        cv.put(NoteContract.NoteEntry.COLUMN_NOTE_ID,noteArr.getJSONObject(i).getInt("note_id"));
+                        cv.put(NoteContract.NoteEntry.COLUMN_NOTE_TEXT,noteArr.getJSONObject(i).getString("note_text"));
+                        cv.put(NoteContract.NoteEntry.COLUMN_NOTE_IMAGE,noteArr.getJSONObject(i).getString("note_img"));
+                        cv.put(NoteContract.NoteEntry.COLUMN_NOTE_TIME,noteArr.getJSONObject(i).getString("note_time"));
+                        cv.put(NoteContract.NoteEntry.COLUMN_NOTE_USER,noteArr.getJSONObject(i).getInt("note_user"));
+                        contentValues[i]=cv;
+                    }
+                    ContentResolver noteresolver = getContext().getContentResolver();
+                    noteresolver.delete(NoteContract.NoteEntry.CONTENT_URI,null,null);
+                    int status = noteresolver.bulkInsert(NoteContract.NoteEntry.CONTENT_URI,contentValues);
+
+                    if (status!=0){
+                        Log.d(TAG," NoteFlashTask 笔记插入成功");
+                        return true;
+                    }else {
+                        Log.d(TAG," NoteFlashTask 笔记插入失败");
+                        return false;
+
+                    }
+
+                }else {
+                    return false;
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+                return false;
+            }
+
         }
 
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(Boolean b) {
+            super.onPostExecute(b);
+            mNoteRefreshLayout.setRefreshing(false);
 
+            if (b){
+                getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,mBundle,callbacks);
+            }
 
-            getActivity().getSupportLoaderManager().restartLoader(USER_NOTE_LOAD,mBundle,callbacks);
         }
     }
 
 
     private LoaderManager.LoaderCallbacks<Cursor> getCallbacks(final Context context){
-        Log.d(TAG,"getCallbacks");
         return new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -228,6 +306,7 @@ public class NoteFragment extends Fragment {
                     mNoteList.setVisibility(View.GONE);
                     return;
                 }
+                showSnackbar(mNoteRefreshLayout,"数据加载成功",800);
                 mNoteList.setVisibility(View.VISIBLE);
                 mNoData.setVisibility(View.GONE);
                 adapter.swapData(data);
@@ -277,7 +356,6 @@ public class NoteFragment extends Fragment {
 
             String time = mNoteData.getString(mNoteData.getColumnIndex(NoteContract.NoteEntry.COLUMN_NOTE_TIME));
             holder.notetime.setText(time);
-            holder.noteuser.setText(GuidePerference.getUserName(getContext()));
             Picasso.with(getContext()).load(imagePath).into(holder.imageView);
         }
 
@@ -304,7 +382,6 @@ public class NoteFragment extends Fragment {
             public final TextView notetext;
             public final TextView notetime;
             public final ImageView imageView;
-            public final  TextView noteuser;
 
 
             public NoteViewHolder(View itemView) {
@@ -312,7 +389,6 @@ public class NoteFragment extends Fragment {
                 notetext = itemView.findViewById(R.id.note_text);
                 notetime = itemView.findViewById(R.id.note_time);
                 imageView = itemView.findViewById(R.id.note_img);
-                noteuser = itemView.findViewById(R.id.note_user);
 
             }
         }

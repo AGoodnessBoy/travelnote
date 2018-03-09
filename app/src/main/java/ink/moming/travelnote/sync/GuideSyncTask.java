@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ink.moming.travelnote.data.ArticleContract;
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.data.NoteContract;
@@ -77,6 +78,7 @@ public class GuideSyncTask {
                     contentValues[i]=cv;
                 }
                 ContentResolver noteresolver = context.getContentResolver();
+
                 noteresolver.delete(NoteContract.NoteEntry.CONTENT_URI,null,null);
                 int status = noteresolver.bulkInsert(NoteContract.NoteEntry.CONTENT_URI,contentValues);
 
@@ -96,9 +98,6 @@ public class GuideSyncTask {
         }
 
     }
-
-
-
 
 
     public static Cursor upDateCityInfoValuesById(Context context,String cityname) throws JSONException {
@@ -141,6 +140,32 @@ public class GuideSyncTask {
 
                 if (updateStatus!=0){
                     Log.d(TAG,"数据插入成功");
+                    ContentValues contentValues[] = null;
+                    JSONArray array = null;
+                    array = new JSONArray(cityInfo.getString("articles"));
+                    if (array.length()>0){
+                        contentValues = new ContentValues[array.length()];
+                        for (int i = 0;i<array.length();i++){
+                            ContentValues item = new ContentValues();
+                            item.put(ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID,array.getJSONObject(i).getString("nid"));
+                            item.put(ArticleContract.ArticleEntry.COLUMN_ARTICLE_IMAGE,array.getJSONObject(i)
+                                    .getJSONArray("album_pic_list")
+                                    .getJSONObject(0)
+                                    .getString("pic_url"));
+                            item.put(ArticleContract.ArticleEntry.COLUMN_ARTICLE_TITLE,array.getJSONObject(i).getString("title"));
+                            item.put(ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY,cityname);
+                            contentValues[i] = item;
+                        }
+                        //contentResolver.delete(ArticleContract.ArticleEntry.CONTENT_URI,null,null);
+
+                        int status = contentResolver.bulkInsert(ArticleContract.ArticleEntry.CONTENT_URI,contentValues);
+                        if (status>0){
+                            Log.d(TAG,"文章插入成功");
+                        }else {
+                            Log.d(TAG,"文章插入成功");
+                        }
+                    }
+
                     updated = contentResolver.query(GuideContract.GuideEntry.CONTENT_URI,null,
                             GuideContract.GuideEntry.COLUMN_CITY_NAME+" = ?",
                             new String[]{cityname},null);

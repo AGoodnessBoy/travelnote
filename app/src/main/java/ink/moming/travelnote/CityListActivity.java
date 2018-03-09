@@ -73,7 +73,6 @@ public class CityListActivity extends AppCompatActivity implements LoaderManager
         Intent intent = new Intent();
         intent.putExtra("city",city);
         setResult(33,intent);
-        Toast.makeText(this,GuidePerference.getCityName(this),Toast.LENGTH_LONG).show();
         finish();
     }
 }

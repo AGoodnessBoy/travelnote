@@ -12,6 +12,7 @@ public class GuideSyncIntentService extends IntentService {
 
     private static final String ACTION_GUIDE_LIST = "ink.moming.travelnote.sync.action.guide_list";
     private static final String ACTION_NOTE_LIST = "ink.moming.travelnote.sync.action.note_list";
+    private static final String ACTION_ARTICLE_LIST = "ink.moming.travelnote.sync.action.article_list";
 
     public GuideSyncIntentService() {
         super("GuideSyncIntentService");
@@ -28,6 +29,9 @@ public class GuideSyncIntentService extends IntentService {
                     break;
                 case ACTION_NOTE_LIST:
                     handleActionSyncNoteList();
+                    break;
+
+                case ACTION_ARTICLE_LIST:
                     break;
                 default:
                     break;
@@ -50,6 +54,10 @@ public class GuideSyncIntentService extends IntentService {
     }
 
 
+
+
+
+
     private void handleActionSyncGuideList(){
         GuideSyncTask.syncGuide(this);
         //startActionSyncGuideList(this);
@@ -58,6 +66,12 @@ public class GuideSyncIntentService extends IntentService {
     private void handleActionSyncNoteList(){
         GuideSyncTask.syncNote(this);
     }
+
+
+    private void handleActionSyncArticle(){
+
+    }
+
 
 
 

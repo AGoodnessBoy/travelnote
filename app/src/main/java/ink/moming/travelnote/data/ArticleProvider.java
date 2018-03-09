@@ -14,21 +14,22 @@ import android.util.Log;
  * Created by admin on 2018/3/1.
  */
 
-public class NoteProvider extends ContentProvider {
+public class ArticleProvider extends ContentProvider {
 
-    public static final String TAG = NoteProvider.class.getSimpleName();
-    public static final int CODE_NOTE = 200;
-    public static final int CODE_NOTE_WITH_ID = 201;
+
+    public static final String TAG = ArticleProvider.class.getSimpleName();
+    public static final int CODE_ARTICLE = 600;
+    public static final int CODE_ARTICLE_WITH_ID = 601;
     private static final UriMatcher sUriMatcher = buildUriMatcher();
-    private NoteDbHelper mDbHelper;
+    private ArticleDbHelper mDbHelper;
 
     private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-        final String authority = NoteContract.CONTENT_AUTHORITY;
+        final String authority = ArticleContract.CONTENT_AUTHORITY;
 
-        matcher.addURI(authority,NoteContract.PATH_NOTE,CODE_NOTE);
-        matcher.addURI(authority,NoteContract.PATH_NOTE+"/#",CODE_NOTE_WITH_ID);
+        matcher.addURI(authority,ArticleContract.PATH_NOTE,CODE_ARTICLE);
+        matcher.addURI(authority,ArticleContract.PATH_NOTE+"/#",CODE_ARTICLE_WITH_ID);
 
 
         return matcher;
@@ -36,7 +37,7 @@ public class NoteProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mDbHelper = new NoteDbHelper(getContext());
+        mDbHelper = new ArticleDbHelper(getContext());
         return true;
     }
 
@@ -46,16 +47,16 @@ public class NoteProvider extends ContentProvider {
         Cursor cursor;
         switch (sUriMatcher.match(uri)){
 
-            case CODE_NOTE_WITH_ID:{
+            case CODE_ARTICLE_WITH_ID:{
                 String noteId = uri.getLastPathSegment();
 
                 String[] selectionArguments =
                         new String[]{noteId};
 
                 cursor = mDbHelper.getReadableDatabase().query(
-                        NoteContract.NoteEntry.TABLE_NAME,
+                        ArticleContract.ArticleEntry.TABLE_NAME,
                         projection,
-                        NoteContract.NoteEntry.COLUMN_NOTE_ID+" = ? ",
+                        ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID+" = ? ",
                         selectionArguments,
                         null,
                         null,sortOrder);
@@ -64,9 +65,9 @@ public class NoteProvider extends ContentProvider {
 
             }
 
-            case CODE_NOTE:{
+            case CODE_ARTICLE:{
                 cursor = mDbHelper.getReadableDatabase().query(
-                        NoteContract.NoteEntry.TABLE_NAME,
+                        ArticleContract.ArticleEntry.TABLE_NAME,
                         projection,selection,selectionArgs, null,null,sortOrder);
 
                 break;
@@ -97,7 +98,7 @@ public class NoteProvider extends ContentProvider {
         final SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
         switch (sUriMatcher.match(uri)){
-            case CODE_NOTE:
+            case CODE_ARTICLE:
                 db.beginTransaction();
                 int rowsInserted = 0;
                 try {
@@ -105,7 +106,7 @@ public class NoteProvider extends ContentProvider {
 
                         long _id =
                                 db.insert(
-                                        NoteContract.NoteEntry.TABLE_NAME,
+                                        ArticleContract.ArticleEntry.TABLE_NAME,
                                         null,
                                         value
                                 );
@@ -118,7 +119,7 @@ public class NoteProvider extends ContentProvider {
                     db.endTransaction();
                 }
 
-                Log.v(TAG,"note:"+Integer.toString(rowsInserted));
+                Log.v(TAG,"article:"+Integer.toString(rowsInserted));
 
                 if (rowsInserted > 0){
                     getContext().getContentResolver().notifyChange(uri,null);
@@ -140,9 +141,9 @@ public class NoteProvider extends ContentProvider {
 
         switch (sUriMatcher.match(uri)){
 
-            case CODE_NOTE:
+            case CODE_ARTICLE:
                 numRowsDeleted =mDbHelper.getWritableDatabase().delete(
-                       NoteContract.NoteEntry.TABLE_NAME,
+                       ArticleContract.ArticleEntry.TABLE_NAME,
                         selection,
                         selectionArgs
                 );
@@ -163,9 +164,9 @@ public class NoteProvider extends ContentProvider {
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         int updateReturn;
         switch (sUriMatcher.match(uri)){
-            case CODE_NOTE_WITH_ID:
+            case CODE_ARTICLE_WITH_ID:
                 updateReturn = mDbHelper.getWritableDatabase().update(
-                        NoteContract.NoteEntry.TABLE_NAME,values,selection,selectionArgs);
+                        ArticleContract.ArticleEntry.TABLE_NAME,values,selection,selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

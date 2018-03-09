@@ -2,6 +2,7 @@ package ink.moming.travelnote.fragment;
 
 
 import android.app.AlertDialog;
+import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import ink.moming.travelnote.LoginActivity;
 import ink.moming.travelnote.R;
 import ink.moming.travelnote.data.GuidePerference;
+import ink.moming.travelnote.data.NoteContract;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -77,6 +79,8 @@ public class MyFragment extends Fragment {
                                     mUserNameTextView.setVisibility(View.GONE);
                                     mUserLoginTextView.setVisibility(View.VISIBLE);
                                     GuidePerference.clearUserStatus(getContext());
+                                    ContentResolver resolver = getActivity().getContentResolver();
+                                    resolver.delete(NoteContract.NoteEntry.CONTENT_URI,null,null);
                                     showSnackbar(view,"退出登录",Snackbar.LENGTH_SHORT);
                                     dialog.dismiss();
                                 }
@@ -101,7 +105,7 @@ public class MyFragment extends Fragment {
 
         if (savedInstanceState!=null){
             mUserNameTextView.setVisibility(View.VISIBLE);
-            Log.d(TAG,"onSaveInstanceState"+savedInstanceState.getString("user_name_save"));
+            Log.d(TAG,"My 状态保存onSaveInstanceState "+savedInstanceState.getString("user_name_save"));
             mUserNameTextView.setText(savedInstanceState.getString("user_name_save"));
             mUserLoginTextView.setVisibility(View.GONE);
         }
@@ -121,10 +125,7 @@ public class MyFragment extends Fragment {
             String name = data.getStringExtra("username");
             int id = data.getIntExtra("userid",0);
             GuidePerference.saveUserStatus(getContext(),mEmail,name,id);
-            Log.d(TAG,"onActivityResult"+GuidePerference.getUserName(getContext()));
-            Log.d(TAG,"onActivityResult"+GuidePerference.getUserId(getContext()));
             mUsername =name;
-            Log.d(TAG,"onActivityResult"+mUsername);
             mUserNameTextView.setVisibility(View.VISIBLE);
             mUserNameTextView.setText(name);
             mUserLoginTextView.setVisibility(View.GONE);
@@ -138,7 +139,7 @@ public class MyFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         if (mUsername!=null){
-            Log.d(TAG,"onSaveInstanceState"+mUsername);
+            Log.d(TAG,"My 状态保存输出 onSaveInstanceState: "+mUsername);
             outState.putString("user_name_save",mUsername);
         }
     }
@@ -147,12 +148,12 @@ public class MyFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (GuidePerference.getUserStatus(getContext())){
-            Log.d(TAG,"onResume:login");
+            Log.d(TAG,"onResume:登录");
             mUserNameTextView.setVisibility(View.VISIBLE);
             mUserNameTextView.setText(GuidePerference.getUserName(getContext()));
             mUserLoginTextView.setVisibility(View.GONE);
         }else {
-            Log.d(TAG,"onResume:not login");
+            Log.d(TAG,"onResume:未登录");
             mUserNameTextView.setVisibility(View.GONE);
             mUserLoginTextView.setVisibility(View.VISIBLE);
         }
