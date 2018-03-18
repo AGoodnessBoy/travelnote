@@ -69,7 +69,6 @@ public class CityListActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public void onClick(String city) {
-
         Intent intent = new Intent();
         intent.putExtra("city",city);
         setResult(33,intent);

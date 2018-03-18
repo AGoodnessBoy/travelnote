@@ -92,7 +92,7 @@ public class NetUnit {
             }else {
                 return null;
             }
-        }finally {
+        } finally {
             urlConnection.disconnect();
         }
     }

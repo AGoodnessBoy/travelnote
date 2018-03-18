@@ -7,6 +7,8 @@ import android.util.Base64;
 
 import java.io.ByteArrayOutputStream;
 
+import ink.moming.travelnote.R;
+
 /**
  * http://developer.android.com/training/displaying-bitmaps/load-bitmap.html
  */
@@ -90,4 +92,5 @@ public class BitmapUnit {
             return null;
         }
     }
+
 }

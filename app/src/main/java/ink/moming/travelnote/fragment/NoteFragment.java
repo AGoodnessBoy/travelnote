@@ -286,7 +286,8 @@ public class NoteFragment extends Fragment {
                         Uri uri = NoteContract.NoteEntry.CONTENT_URI;
                         String selection = NoteContract.NoteEntry.COLUMN_NOTE_USER+ "= ?";
                         String[] selectionArgs = new String[]{Integer.toString(userid)};
-                        return new CursorLoader(context,uri,MAIN_NOTE_PROJECTION,selection,selectionArgs,null);
+                        String sortOrder = NoteContract.NoteEntry.COLUMN_NOTE_TIME+" DESC";
+                        return new CursorLoader(context,uri,MAIN_NOTE_PROJECTION,selection,selectionArgs,sortOrder);
 
                     default:
                         throw new RuntimeException("Loader Not Implemented: " + id);

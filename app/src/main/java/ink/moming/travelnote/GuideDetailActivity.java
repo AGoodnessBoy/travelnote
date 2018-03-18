@@ -9,6 +9,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+/**
+ * 攻略文章展示
+ * 采用WebView 直接显示百度攻略网页版
+ *
+ */
+
 public class GuideDetailActivity extends AppCompatActivity {
 
     private static final String TAG = GuideDetailActivity.class.getSimpleName();
@@ -40,13 +46,6 @@ public class GuideDetailActivity extends AppCompatActivity {
             settings.setJavaScriptEnabled(true);
             settings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
         }
-
-
-
-
-
-
-
     }
 
 }
