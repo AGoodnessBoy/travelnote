@@ -67,4 +67,6 @@
     <string name="title_str">标题</string>
     <string name="note_text_str">来自西伯利亚的寒冬，记冬天的贝加尔湖.</string>
     <string name="citylist_load_str">城市列表加载中...</string>
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>
