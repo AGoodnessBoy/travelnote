@@ -33,7 +33,7 @@
             android:layout_gravity="center"
             app:contentInsetStart="0dp"
             android:paddingLeft="16dp"
-            app:title="目的地选择"
+            app:title="@string/destination_choose_str"
             app:titleTextColor="@color/primaryTextColor"
             >
 

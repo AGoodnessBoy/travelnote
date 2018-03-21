@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import ink.moming.travelnote.R;
 import ink.moming.travelnote.data.ArticleContract;
 import ink.moming.travelnote.data.GuideContract;
 import ink.moming.travelnote.data.GuidePerference;
@@ -62,7 +63,7 @@ public class GuideSyncTask {
     synchronized public static void syncNote(Context context){
 
         try {
-            String notestr = NetUnit.getNoteList(GuidePerference.getUserId(context));
+            String notestr = NetUnit.getNoteList(GuidePerference.getUserId(context),context);
             JSONObject noteObj = new JSONObject(notestr);
 
             if (noteObj.getString("status").equals("400")){
@@ -83,9 +84,9 @@ public class GuideSyncTask {
                 int status = noteresolver.bulkInsert(NoteContract.NoteEntry.CONTENT_URI,contentValues);
 
                 if (status!=0){
-                    Log.d(TAG,"笔记插入成功");
+                    Log.d(TAG,context.getString(R.string.note_update_success_str));
                 }else {
-                    Log.d(TAG,"笔记插入失败");
+                    Log.d(TAG,context.getString(R.string.note_update_failed_str));
 
                 }
 
@@ -125,7 +126,7 @@ public class GuideSyncTask {
                     cursor.close();
                 }
                 Uri cityUri = GuideContract.GuideEntry.buildUriWithId(cityid);
-                JSONObject cityInfo = NetUnit.getCityContentFromBaiduAPI(citylink);
+                JSONObject cityInfo = NetUnit.getCityContentFromBaiduAPI(citylink,context);
 
                 cityInfoCV.put(GuideContract.GuideEntry.COLUMN_CITY_INFO,
                         cityInfo.getString("info"));
@@ -139,7 +140,7 @@ public class GuideSyncTask {
                         new String[]{Integer.toString(cityid)});
 
                 if (updateStatus!=0){
-                    Log.d(TAG,"数据插入成功");
+                    Log.d(TAG,context.getString(R.string.data_input_success_str));
                     ContentValues contentValues[] = null;
                     JSONArray array = null;
                     array = new JSONArray(cityInfo.getString("articles"));
@@ -156,13 +157,12 @@ public class GuideSyncTask {
                             item.put(ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY,cityname);
                             contentValues[i] = item;
                         }
-                        //contentResolver.delete(ArticleContract.ArticleEntry.CONTENT_URI,null,null);
 
                         int status = contentResolver.bulkInsert(ArticleContract.ArticleEntry.CONTENT_URI,contentValues);
                         if (status>0){
-                            Log.d(TAG,"文章插入成功");
+                            Log.d(TAG,context.getString(R.string.article_input_success_str));
                         }else {
-                            Log.d(TAG,"文章插入成功");
+                            Log.d(TAG,context.getString(R.string.article_input_failed_str));
                         }
                     }
 
@@ -170,8 +170,10 @@ public class GuideSyncTask {
                             GuideContract.GuideEntry.COLUMN_CITY_NAME+" = ?",
                             new String[]{cityname},null);
                 }else {
-                    Log.d(TAG,"数据插入失败");
+
+                    Log.d(TAG,context.getString(R.string.date_input_failed_str));
                     updated = null;
+
 
                 }
             }

@@ -27,10 +27,9 @@ public class GuideDetailActivity extends AppCompatActivity {
 
         Intent web =  getIntent();
         final String url = web.getStringExtra("url");
-        Log.d(TAG, "文章打开中..."+ url);
+        Log.d(TAG, getString(R.string.opening_article_str)+ url);
 
         WebView webView = findViewById(R.id.guide_article);
-        //webView.loadUrl(url);
 
         if (webView!=null&&url!=null){
             webView.loadUrl(url);

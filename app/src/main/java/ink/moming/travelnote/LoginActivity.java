@@ -36,6 +36,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ink.moming.travelnote.unit.NetUnit;
 
 import static android.Manifest.permission.READ_CONTACTS;
@@ -64,9 +66,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private UserLoginTask mAuthTask = null;
 
     // UI references.
+
+    @BindView(R.id.email)
     private AutoCompleteTextView mEmailView;
+
+    @BindView(R.id.password)
     private EditText mPasswordView;
+
+    @BindView(R.id.login_progress)
     private View mProgressView;
+
+    @BindView(R.id.login_form)
     private View mLoginFormView;
 
     @Override
@@ -74,10 +84,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView =  findViewById(R.id.email);
+        ButterKnife.bind(this);
         populateAutoComplete();
 
-        mPasswordView =   findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -97,8 +106,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
-        mLoginFormView = findViewById(R.id.login_form);
-        mProgressView = findViewById(R.id.login_progress);
     }
 
     private void populateAutoComplete() {
@@ -319,7 +326,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             try {
                 // Simulate network access.
                 Thread.sleep(2000);
-                String res = NetUnit.userLogin(mEmail);
+                String res = NetUnit.userLogin(mEmail,LoginActivity.this);
                 resJson = new JSONObject(res);
                 return resJson;
             } catch (InterruptedException e) {
@@ -346,7 +353,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         int id= success.getJSONObject("data").getInt("user_id");
                         if (pass.equals(mPassword)){
 
-                            showSnackbar(mLoginFormView,"登录成功", Snackbar.LENGTH_LONG);
+                            showSnackbar(mLoginFormView,getString(R.string.login_success), Snackbar.LENGTH_LONG);
                             Intent intent = new Intent();
                             intent.putExtra("username",name);
                             intent.putExtra("useremail",mEmail);
@@ -356,7 +363,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
 
                         }else {
-                            showSnackbar(mLoginFormView,"登录失败",Snackbar.LENGTH_LONG);
+                            showSnackbar(mLoginFormView,getString(R.string.login_failed),Snackbar.LENGTH_LONG);
                             mPasswordView.setError(getString(R.string.error_incorrect_password));
                             mPasswordView.requestFocus();
                         }
@@ -366,16 +373,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
                         final View view = getLayoutInflater().inflate(R.layout.dialog_name_input,null);
                         AlertDialog dialog = new AlertDialog.Builder(LoginActivity.this)
-                                .setTitle("注册新用户")
-                                .setMessage("该邮箱未被注册,是否创建新用户")
+                                .setTitle(R.string.addnewusertitle_str)
+                                .setMessage(R.string.addnewusermsg_str)
                                 .setView(view)
-                                .setNegativeButton("否", new DialogInterface.OnClickListener() {
+                                .setNegativeButton(R.string.no_str, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
                                     }
                                 })
-                                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                                .setPositiveButton(R.string.yes_str, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
 
@@ -446,10 +453,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 if (statusJson.getInt("status")==200){
                     //注册成功showSnackbar
                     showProgress(false);
-                    showSnackbar(mLoginFormView,"注册成功",Snackbar.LENGTH_LONG);
+                    showSnackbar(mLoginFormView,getString(R.string.reg_success),Snackbar.LENGTH_LONG);
                 }else {
                     showProgress(false);
-                    showSnackbar(mLoginFormView,"注册失败",Snackbar.LENGTH_LONG);
+                    showSnackbar(mLoginFormView,getString(R.string.reg_failed),Snackbar.LENGTH_LONG);
+
                 }
             } catch (JSONException e) {
                 e.printStackTrace();

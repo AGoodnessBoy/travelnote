@@ -60,16 +60,10 @@ public class GuideSyncIntentService extends IntentService {
 
     private void handleActionSyncGuideList(){
         GuideSyncTask.syncGuide(this);
-        //startActionSyncGuideList(this);
     }
 
     private void handleActionSyncNoteList(){
         GuideSyncTask.syncNote(this);
-    }
-
-
-    private void handleActionSyncArticle(){
-
     }
 
 

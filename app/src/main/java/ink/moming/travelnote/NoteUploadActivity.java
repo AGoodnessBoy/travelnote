@@ -30,6 +30,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import ink.moming.travelnote.data.GuidePerference;
 import ink.moming.travelnote.unit.BitmapUnit;
 import ink.moming.travelnote.unit.NetUnit;
@@ -42,13 +44,18 @@ public class NoteUploadActivity extends AppCompatActivity {
     AlertDialog loading_dialog;
 
 
-
+    @BindView(R.id.uploadimage)
     private ImageView mUploadImage;
+
+
     private String photoPath;
     private Bitmap mBitmap;
     private int defaultImageRes;
 
+    @BindView(R.id.upload_button)
     private Button upLoadButton;
+
+    @BindView(R.id.content_et)
     private EditText mUploadText;
 
     private UploadHandler handler = new UploadHandler(NoteUploadActivity.this);
@@ -75,11 +82,11 @@ public class NoteUploadActivity extends AppCompatActivity {
             super.handleMessage(msg);
             switch (msg.what){
                 case UPDATE_DEFEATED:
-                    Toast.makeText(mActivity, "上传失败", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, R.string.uploadfailed_str, Toast.LENGTH_SHORT).show();
 
                     break;
                 case UPDATE_SUCCESS:
-                    Toast.makeText(mActivity, "上传成功", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, R.string.uploadsuccess_str, Toast.LENGTH_SHORT).show();
                     break;
                 default:break;
 
@@ -101,10 +108,11 @@ public class NoteUploadActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_note_upload);
+
+        ButterKnife.bind(this);
+
         defaultImageRes = R.drawable.ic_addpic;
 
-        mUploadImage = findViewById(R.id.uploadimage);
-        mUploadText = findViewById(R.id.content_et);
 
         mUploadImage.setImageResource(defaultImageRes);
         int permission = ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -122,7 +130,7 @@ public class NoteUploadActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Toast.makeText(NoteUploadActivity.this, "添加图片", Toast.LENGTH_SHORT).show();
+                Toast.makeText(NoteUploadActivity.this, R.string.addpic_str, Toast.LENGTH_SHORT).show();
                 // 选择图片
                 Intent intent = new Intent(Intent.ACTION_PICK, null);
                 intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
@@ -139,8 +147,6 @@ public class NoteUploadActivity extends AppCompatActivity {
             }
         });
 
-        upLoadButton = findViewById(R.id.upload_button);
-
         upLoadButton.setOnClickListener(new View.OnClickListener() {
 
 
@@ -153,7 +159,7 @@ public class NoteUploadActivity extends AppCompatActivity {
                     upload.execute();
 
                 }else {
-                    Toast.makeText(NoteUploadActivity.this, "请添加图片", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(NoteUploadActivity.this, R.string.pleaseaddpic_str, Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -172,9 +178,9 @@ public class NoteUploadActivity extends AppCompatActivity {
          */
     protected void dialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(NoteUploadActivity.this);
-        builder.setMessage("确认移除已添加图片吗？");
-        builder.setTitle("提示");
-        builder.setPositiveButton("确认", new DialogInterface.OnClickListener() {
+        builder.setMessage(R.string.removepicmsg_str);
+        builder.setTitle(R.string.removetitle_str);
+        builder.setPositiveButton(R.string.confirm_str, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -182,7 +188,7 @@ public class NoteUploadActivity extends AppCompatActivity {
                 mUploadImage.setImageResource(defaultImageRes);
             }
         });
-        builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
+        builder.setNegativeButton(R.string.cancel_str, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
@@ -196,7 +202,7 @@ public class NoteUploadActivity extends AppCompatActivity {
 
         final View loading_view = getLayoutInflater().inflate(R.layout.dialog_loading,null);
         AlertDialog.Builder builder= new  AlertDialog.Builder(NoteUploadActivity.this);
-        builder.setTitle("上传中...");
+        builder.setTitle(R.string.uploading_str);
         builder.setView(loading_view);
         loading_dialog = builder.create();
         loading_dialog.show();

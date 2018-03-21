@@ -16,7 +16,7 @@
             android:layout_marginLeft="8dp"
             android:layout_marginTop="8dp"
             android:textSize="18sp"
-            tools:text="来自西伯利亚的寒冬，记冬天的贝加尔湖."
+            tools:text="@string/note_text_str"
             android:id="@+id/note_text"
             />
 

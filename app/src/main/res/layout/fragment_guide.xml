@@ -40,7 +40,7 @@
                     android:textSize="20sp"
                     android:id="@+id/city_name"
                     android:clickable="true"
-                    tools:text="杭州市"
+                    tools:text="@string/hangzhou_str"
                     />
                 <TextView
                     android:layout_width="match_parent"
@@ -63,7 +63,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="120dp"
                     android:id="@+id/no_article"
-                    android:text="暂无数据"
+                    android:text="@string/nodata_str"
                     android:textSize="20sp"
                     android:layout_margin="8dp"
                     android:visibility="gone"

@@ -10,7 +10,7 @@
         android:visibility="invisible"
         android:gravity="center"
         android:textSize="20sp"
-        android:text="登录后查看旅行记录"
+        android:text="@string/after_login_check_note_str"
         android:id="@+id/no_note"
         />
     <ProgressBar

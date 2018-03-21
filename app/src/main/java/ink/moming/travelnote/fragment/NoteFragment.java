@@ -33,6 +33,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import ink.moming.travelnote.LoginActivity;
 import ink.moming.travelnote.NoteUploadActivity;
 import ink.moming.travelnote.R;
@@ -46,11 +48,14 @@ import ink.moming.travelnote.unit.NetUnit;
  */
 public class NoteFragment extends Fragment {
 
+    private Unbinder unbinder;
+
     private RecyclerView mNoteList;
     private FloatingActionButton mAddBtn;
     private TextView mNoData;
     private ProgressBar mPb;
     private SwipeRefreshLayout mNoteRefreshLayout;
+
     public static final int USER_RES_NOTE = 44;
     public static final int UP_RES_NOTE = 45;
     public static final int USER_NOTE_LOAD = 28;
@@ -82,6 +87,8 @@ public class NoteFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_note, container, false);
+
+        unbinder = ButterKnife.bind(this,view);
         mNoteList = view.findViewById(R.id.note_list);
         mAddBtn = view.findViewById(R.id.fab_note);
         mNoData = view.findViewById(R.id.no_note);
@@ -171,16 +178,6 @@ public class NoteFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-
-    @Override
-    public void onStop() {
-        super.onStop();
-    }
 
     public void showSnackbar(View view, String message, int duration)
     {
@@ -221,7 +218,7 @@ public class NoteFragment extends Fragment {
         protected Boolean doInBackground(Void... voids) {
 
             mNoteRefreshLayout.setRefreshing(true);
-            String update = NetUnit.getNoteList(GuidePerference.getUserId(getContext()));
+            String update = NetUnit.getNoteList(GuidePerference.getUserId(getContext()),getContext());
             try {
                 JSONObject data =new JSONObject(update);
                 if (data.getString("status").equals("400")){
@@ -241,10 +238,10 @@ public class NoteFragment extends Fragment {
                     int status = noteresolver.bulkInsert(NoteContract.NoteEntry.CONTENT_URI,contentValues);
 
                     if (status!=0){
-                        Log.d(TAG," NoteFlashTask 笔记插入成功");
+                        Log.d(TAG,getContext().getString(R.string.note_update_success_str));
                         return true;
                     }else {
-                        Log.d(TAG," NoteFlashTask 笔记插入失败");
+                        Log.d(TAG,getContext().getString(R.string.note_update_failed_str));
                         return false;
 
                     }
@@ -303,11 +300,11 @@ public class NoteFragment extends Fragment {
                 }
                 if (!cursorHasValidData){
                     mNoData.setVisibility(View.VISIBLE);
-                    mNoData.setText("未找到笔记记录！");
+                    mNoData.setText(R.string.not_find_note_str);
                     mNoteList.setVisibility(View.GONE);
                     return;
                 }
-                showSnackbar(mNoteRefreshLayout,"数据加载成功",800);
+                showSnackbar(mNoteRefreshLayout,getString(R.string.data_input_success_str),800);
                 mNoteList.setVisibility(View.VISIBLE);
                 mNoData.setVisibility(View.GONE);
                 adapter.swapData(data);
@@ -395,4 +392,9 @@ public class NoteFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unbinder.unbind();
+    }
 }

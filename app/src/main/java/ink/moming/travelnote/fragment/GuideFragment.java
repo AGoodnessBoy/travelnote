@@ -55,8 +55,8 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     private GuideListAdapter mGuideListAdapter;
     private ProgressBar mProgressBar;
     private MapView mCityMap;
-    private GoogleMap map;
-    private LatLng cityLatlng;
+    private static GoogleMap map;
+    private static LatLng cityLatlng;
 
 
 
@@ -64,8 +64,8 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     public static final String TAG = GuideFragment.class.getSimpleName();
     public static final int ID_GUIDE_LOADER = 32;
     public static final int CITY_LIST_RES = 31;
-    public static final String MAPVIEW_BUNDLE_KEY ="map_data";
     public static final String CITY_STATUS = "city-status";
+    public static final String GUIDE_BAIDU_IAMGE_BASE_URL = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/";
 
     public static final String[] MAIN_GUIDE_PROJECTION ={
             GuideContract.GuideEntry._ID,
@@ -133,7 +133,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
             getActivity().getSupportLoaderManager().initLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
 
         }else {
-            Log.d(TAG,"状态保存：城市"+savedInstanceState.getBundle(CITY_STATUS).getString("city-name"));
             cityBundle =savedInstanceState.getBundle(CITY_STATUS);
             getActivity().getSupportLoaderManager().restartLoader(ID_GUIDE_LOADER,cityBundle,callbacks);
         }
@@ -158,9 +157,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     public void onAttach(Context context) {
         super.onAttach(context);
         Log.d(TAG,"onAttach");
-        //同步基础数据
         GuideSyncUtils.initialize(getContext());
-        Log.d(TAG,"初始化城市数据initialize");
 
     }
 
@@ -194,7 +191,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         if (cityBundle!=null){
 
             outState.putBundle(CITY_STATUS,cityBundle);
-            Log.d(TAG,"状态输出："+outState.getBundle(CITY_STATUS).getString("city-name"));
         }
     }
 
@@ -250,7 +246,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
     }
 
     private LoaderManager.LoaderCallbacks<Cursor> getCallbacks(final Context context){
-        Log.d(TAG,"获取加载器getCallbacks");
+
         return new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -283,18 +279,18 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                 String cityname = data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_NAME));
                 mCityNameTextView.setText(cityname);
                 if (data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_UPDATE_TAG)).equals("0")){
-                    Log.d(TAG,"网络加载");
+                    Log.d(TAG,getString(R.string.net_load_str));
                     UpdateCityInfo updateCityInfo = new UpdateCityInfo();
                     updateCityInfo.execute(cityname);
                 }else {
                     mProgressBar.setVisibility(View.GONE);
                     mGuideList.setVisibility(View.VISIBLE);
                     mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
-                    String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
+                    String image_link = GUIDE_BAIDU_IAMGE_BASE_URL+
                             data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
                     Picasso.with(getContext()).load(image_link).into(mCityImageView);
                     //loader article
-                    Log.d(TAG,"本地加载");
+                    Log.d(TAG,getString(R.string.local_load_str));
                     Uri uri = ArticleContract.ArticleEntry.CONTENT_URI;
                     String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
                     String[] selectionArgs = new String[]{cityname};
@@ -354,7 +350,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
             mProgressBar.setVisibility(View.GONE);
             mGuideList.setVisibility(View.VISIBLE);
             mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
-            String image_link = "http://gss0.baidu.com/7LsWdDW5_xN3otqbppnN2DJv/lvpics/pic/item/"+
+            String image_link = GUIDE_BAIDU_IAMGE_BASE_URL+
                     data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
             Picasso.with(getContext()).load(image_link).into(mCityImageView);
 
@@ -374,22 +370,18 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
 
 
     //地理位置逆向计算
-    private class MapGeocodingTask extends AsyncTask<String,Void,LatLng>{
+    private static class MapGeocodingTask extends AsyncTask<String,Void,LatLng>{
 
         @Override
         protected LatLng doInBackground(String... strings) {
 
             String address = strings[0];
-            Log.d(TAG,"Map定位 当前选择城市："+address);
             return NetUnit.getCityLocationFromGoogleMap(address);
         }
 
         @Override
         protected void onPostExecute(LatLng latLng) {
             super.onPostExecute(latLng);
-            if (latLng!=null){
-                Log.d(TAG,"Map定位 MapGeocodingTask"+latLng.toString());
-            }
             cityLatlng = latLng;
             if (cityLatlng!=null) {
                 map.addMarker(new MarkerOptions().position(cityLatlng));
@@ -400,7 +392,6 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
 
 
     public void upDateGuide(){
-        Log.d(TAG,"刷新 upDateGuide");
 
             Bundle bundle = new Bundle();
             bundle.putString("city-name",GuidePerference.getCityName(getContext()));

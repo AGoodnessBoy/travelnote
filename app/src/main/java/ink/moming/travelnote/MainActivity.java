@@ -9,13 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ink.moming.travelnote.adapter.MainPagerAdapter;
-import ink.moming.travelnote.fragment.GuideFragment;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG  = MainActivity.class.getSimpleName();
 
-    private TabLayout mTabs;
-    private ViewPager mViewPager;
+
+    TabLayout mTabs;
+
+    ViewPager mViewPager;
+
     public  MainPagerAdapter mainPagerAdapter;
 
     List<String> titles = new ArrayList<>();
@@ -27,8 +29,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initViewPager();
-
+        mTabs = findViewById(R.id.main_tabs);
+        mViewPager = findViewById(R.id.main_view_pager);
+        mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager(),this);
+        titles.add(getString(R.string.guide));
+        titles.add(getString(R.string.note));
+        titles.add(getString(R.string.my));
         mViewPager.setAdapter(mainPagerAdapter);
         mTabs.setupWithViewPager(mViewPager);
 
@@ -39,29 +45,15 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
-
-    //初始化 ViewPager TabLayout
-    private void initViewPager(){
-        mainPagerAdapter = new MainPagerAdapter(getSupportFragmentManager(),this);
-
-        mTabs = findViewById(R.id.main_tabs);
-        mViewPager = findViewById(R.id.main_view_pager);
-        titles.add(getString(R.string.guide));
-        titles.add(getString(R.string.note));
-        titles.add(getString(R.string.my));
-
-    }
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
 
         super.onSaveInstanceState(outState);
     }
 
-    public  void updataGuideList(){
-        GuideFragment guideFragment = (GuideFragment)mainPagerAdapter.getItem(0);
-        mainPagerAdapter.getItemPosition(guideFragment);
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
     }
-
-
 }

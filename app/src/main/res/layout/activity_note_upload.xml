@@ -96,7 +96,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="上传图片"
+                android:text="@string/uppic_str"
                 android:textColor="@color/primaryTextColor"
                 android:textSize="22sp"
                 />

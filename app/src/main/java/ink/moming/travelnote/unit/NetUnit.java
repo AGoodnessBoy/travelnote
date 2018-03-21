@@ -53,6 +53,7 @@ public class NetUnit {
     public static final String USER_API ="http://api.moming.ink/db_user_func.php";
     public static final String NOTE_API ="http://api.moming.ink/db_note_func.php";
     public static final String NOTE_LSIT_API ="http://api.moming.ink/notelist.php";
+    public static final String BAIDU_LVYOU_URL ="https://lvyou.baidu.com";
 
 
 
@@ -99,12 +100,12 @@ public class NetUnit {
 
 
     //城市内容加载
-    public static JSONObject getCityContentFromBaiduAPI(String link){
+    public static JSONObject getCityContentFromBaiduAPI(String link,Context context){
 
         HtmlAnalysis htmlTools = new  HtmlAnalysis();
 
-        String cityurl = "https://lvyou.baidu.com"+link;
-        Log.d(TAG,"加载城市内容 "+link);
+        String cityurl = BAIDU_LVYOU_URL+link;
+        Log.d(TAG,context.getString(R.string.addcitycontent_str)+link);
         JSONObject cityContent = htmlTools.getCityGuide(cityurl);
 
         return cityContent;
@@ -116,7 +117,7 @@ public class NetUnit {
 
 
         JSONArray list = new JSONArray(openRawResource(context,R.raw.city_list));
-        Log.d(TAG,"城市列表加载中...");
+        Log.d(TAG,context.getString(R.string.citylist_load_str));
 
         ArrayList<ContentValues> contentValues = new ArrayList<ContentValues>();
 
@@ -256,7 +257,7 @@ public class NetUnit {
     }
 
     //用户登录
-    public static String userLogin(String email){
+    public static String userLogin(String email,Context context){
         Uri uri = Uri.parse(USER_API).buildUpon()
                 .appendQueryParameter("action","login")
                 .appendQueryParameter("email",email)
@@ -264,7 +265,7 @@ public class NetUnit {
         URL url = null;
         String json = null;
         try{
-            Log.d(TAG,"用户登录 "+email);
+            Log.d(TAG,context.getString(R.string.login_str)+email);
             url = new URL(uri.toString());
             json = getResponseFromHttpUrl(url);
         }catch (MalformedURLException e){
@@ -326,7 +327,6 @@ public class NetUnit {
         Request request = new Request.Builder()
                 .url(NOTE_API).post(mbody.build())
                 .build();
-        Log.d(TAG,"笔记上传中...");
 
 
         return mOkHttpClient.newCall(request);
@@ -334,7 +334,7 @@ public class NetUnit {
     }
 
     //获取用户笔记
-    public static String getNoteList(int id){
+    public static String getNoteList(int id,Context context){
 
         Uri uri = Uri.parse(NOTE_LSIT_API).buildUpon()
                 .appendQueryParameter("action","list")
@@ -343,7 +343,7 @@ public class NetUnit {
         URL url = null;
         String json = null;
         try{
-            Log.d(TAG,"笔记获取中...");
+            Log.d(TAG,context.getString(R.string.note_loading_str));
             url = new URL(uri.toString());
             json = getResponseFromHttpUrl(url);
         }catch (MalformedURLException e){

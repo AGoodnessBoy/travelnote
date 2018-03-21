@@ -26,7 +26,10 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
 
     private final Context mContext;
 
+    private static final String BAIDU_IMAGE_SMALL_URL="https://gss0.bdstatic.com/6b1IcTe9RMgBo1vgoIiO_jowehsv/maps/services/thumbnails?width=215&height=145&quality=120&align=middle,middle&src=";
 
+    private static final String BAIDU_IMAGE_BASE_URL="http://hiphotos.baidu.com/lvpics/pic/item/";
+    private static final String BAIDU_LVYOU_BASE_URL="https://lvyou.baidu.com/notes/";
     private Cursor mCursor;
     private final static String TAG = GuideListAdapter.class.getSimpleName();
 
@@ -52,7 +55,7 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, GuideDetailActivity.class);
-                String url ="https://lvyou.baidu.com/notes/"+getAricleId(viewHolder.getAdapterPosition());
+                String url =BAIDU_LVYOU_BASE_URL+getAricleId(viewHolder.getAdapterPosition());
                 Log.d(TAG,url);
 
                 intent.putExtra("url",url);
@@ -66,9 +69,7 @@ public class GuideListAdapter extends RecyclerView.Adapter<GuideListAdapter.Guid
     public void onBindViewHolder(GuideListViewHolder holder, int position) {
         mCursor.moveToPosition(position);
         Context context = holder.itemView.getContext();
-        String image_small = "https://gss0.bdstatic.com/6b1IcTe9RMgBo1vgoIiO_jowehsv/maps/services/thumbnails?width=215&height=145&quality=120&align=middle,middle&src=";
-        String image_base = "http://hiphotos.baidu.com/lvpics/pic/item/";
-        String image_url = image_small+ image_base+mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_IMAGE))+".jpg";
+        String image_url = BAIDU_IMAGE_SMALL_URL+ BAIDU_IMAGE_BASE_URL+mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_IMAGE))+".jpg";
         holder.mArticleTitle.setText(mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_TITLE)));
         Picasso.with(context).load(image_url)
                 .into(holder.mArticleImage);
