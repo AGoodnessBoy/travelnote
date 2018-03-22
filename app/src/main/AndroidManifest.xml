@@ -31,7 +31,13 @@
         <service
             android:name=".sync.GuideSyncIntentService"
             android:exported="false" />
-        <service android:name=".WidgetListAdapterService" />
+        <service
+            android:name=".GuideWidgetIntentService"
+            android:exported="false"/>
+        <service android:name=".WidgetListAdapterService"
+            android:enabled="true"
+            android:exported="false"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
 
         <meta-data
             android:name="com.google.android.gms.version"
@@ -48,7 +54,9 @@
             android:authorities="ink.moming.travelnote.data.NoteProvider" />
         <provider
             android:name=".data.ArticleProvider"
-            android:authorities="ink.moming.travelnote.data.ArticleProvider" />
+            android:authorities="ink.moming.travelnote.data.ArticleProvider"
+            android:exported="true"
+            />
 
         <activity
             android:name=".CityListActivity"
@@ -68,6 +76,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/guidelist_widget_info" />
         </receiver>
+
+
     </application>
 
 </manifest>

@@ -285,6 +285,7 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                 }else {
                     mProgressBar.setVisibility(View.GONE);
                     mGuideList.setVisibility(View.VISIBLE);
+                    mNoDataTextView.setVisibility(View.GONE);
                     mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
                     String image_link = GUIDE_BAIDU_IAMGE_BASE_URL+
                             data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
@@ -298,6 +299,9 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
                             selection,selectionArgs,null);
                     if (cursor!=null&&cursor.getCount()>0){
                         mGuideListAdapter.swapData(cursor);
+                    }else {
+                        mGuideList.setVisibility(View.INVISIBLE);
+                        mNoDataTextView.setVisibility(View.VISIBLE);
                     }
                 }
 
@@ -346,21 +350,27 @@ public class GuideFragment extends Fragment  implements  OnMapReadyCallback{
         @Override
         protected void onPostExecute(Cursor data) {
             super.onPostExecute(data);
-            data.moveToFirst();
-            mProgressBar.setVisibility(View.GONE);
-            mGuideList.setVisibility(View.VISIBLE);
-            mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
-            String image_link = GUIDE_BAIDU_IAMGE_BASE_URL+
-                    data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
-            Picasso.with(getContext()).load(image_link).into(mCityImageView);
+            if (data!=null){
+                data.moveToFirst();
+                mProgressBar.setVisibility(View.GONE);
+                mGuideList.setVisibility(View.VISIBLE);
+                mNoDataTextView.setVisibility(View.GONE);
+                mCityDescTextView.setText(data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_INFO)));
+                String image_link = GUIDE_BAIDU_IAMGE_BASE_URL+
+                        data.getString(data.getColumnIndex(GuideContract.GuideEntry.COLUMN_CITY_IMAGES));
+                Picasso.with(getContext()).load(image_link).into(mCityImageView);
 
-            Uri uri = ArticleContract.ArticleEntry.CONTENT_URI;
-            String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
-            String[] selectionArgs = new String[]{cityname};
-            Cursor cursor = getActivity().getContentResolver().query(uri,MAIN_ARTICLE_PROJECTION,
-                    selection,selectionArgs,null);
-            if (cursor!=null&&cursor.getCount()>0){
-                mGuideListAdapter.swapData(cursor);
+                Uri uri = ArticleContract.ArticleEntry.CONTENT_URI;
+                String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
+                String[] selectionArgs = new String[]{cityname};
+                Cursor cursor = getActivity().getContentResolver().query(uri,MAIN_ARTICLE_PROJECTION,
+                        selection,selectionArgs,null);
+                if (cursor!=null&&cursor.getCount()>0){
+                    mGuideListAdapter.swapData(cursor);
+                }
+            }else {
+                mGuideList.setVisibility(View.INVISIBLE);
+                mNoDataTextView.setVisibility(View.VISIBLE);
             }
 
         }

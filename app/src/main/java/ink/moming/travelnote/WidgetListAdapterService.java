@@ -1,12 +1,9 @@
 package ink.moming.travelnote;
 
 import android.appwidget.AppWidgetManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -20,7 +17,8 @@ import ink.moming.travelnote.data.GuidePerference;
 public class WidgetListAdapterService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        return null;
+
+        return new WidgetListRemoteViewFactory(this.getApplicationContext(),intent);
     }
 }
 
@@ -39,22 +37,24 @@ class WidgetListRemoteViewFactory implements RemoteViewsService.RemoteViewsFacto
     public WidgetListRemoteViewFactory(Context context,Intent intent){
         mContext = context;
         mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,AppWidgetManager.INVALID_APPWIDGET_ID);
+
+
     }
 
     @Override
     public void onCreate() {
-
     }
 
     @Override
     public void onDataSetChanged() {
 
-        mCursor = null ;
-
-        ContentResolver contentResolver = mContext.getContentResolver();
+        if (mCursor!=null){
+            mCursor.close();
+        }
         String selection = ArticleContract.ArticleEntry.COLUMN_ARTICLE_CITY+ "= ?";
         String[] selectionArgs = new String[]{GuidePerference.getCityName(mContext)};
-        mCursor = contentResolver.query(
+
+        mCursor = mContext.getContentResolver().query(
                 ArticleContract.ArticleEntry.CONTENT_URI,ARTICLE_PROJECTION,selection,selectionArgs,null);
 
 
@@ -62,20 +62,16 @@ class WidgetListRemoteViewFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public void onDestroy() {
-
-        mCursor = null;
+        if (mCursor!=null){
+            mCursor.close();
+        }
 
     }
 
     @Override
     public int getCount() {
-
-        if (mCursor!=null){
-           return mCursor.getCount();
-        }
-        else {
-            return 0;
-        }
+       if (mCursor == null) return 0;
+       return mCursor.getCount();
     }
 
     @Override
@@ -86,6 +82,7 @@ class WidgetListRemoteViewFactory implements RemoteViewsService.RemoteViewsFacto
         remoteViews.setTextViewText(R.id.widget_guide_title,
                 mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_TITLE)));
         String id=  mCursor.getString(mCursor.getColumnIndex(ArticleContract.ArticleEntry.COLUMN_ARTICLE_ID));
+
         Intent fillInIntent = new Intent();
         String url =BAIDU_LVYOU_BASE_URL+id;
 
@@ -108,11 +105,11 @@ class WidgetListRemoteViewFactory implements RemoteViewsService.RemoteViewsFacto
 
     @Override
     public long getItemId(int position) {
-        return 0;
+        return position;
     }
 
     @Override
     public boolean hasStableIds() {
-        return false;
+        return true;
     }
 }
